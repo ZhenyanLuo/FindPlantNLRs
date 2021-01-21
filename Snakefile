@@ -139,7 +139,7 @@ rule step13:
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream#
 rule step14:
      input:
-         genome="/genome/{sample}.all_20kbflanking_upper.fa",
+         genome="genome/{sample}.all_20kbflanking_upper.fa",
          prot="tmp/prothint_sequences.fa"
     # output:
      shell:
