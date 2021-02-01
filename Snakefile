@@ -150,5 +150,55 @@ rule step14:
 ##
 ##
 ##
+#use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
+rule find nonTIR:
+     input:
+         nonTIR="/genome/EG_nonTIRhmm",
+         genome="/genome/{sample}.fa"
+     output:
+         "tmp/{sample}.nonTIRout"
+     shell:
+         "nhmmer {input.nonTIR} {input.genome} > {output}"
+#use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
+rule find TIR:
+     input：
+         TIR="/genome/EG_TIRhmm",
+         genome="/genome/{sample}.fa"
+     output:
+         "tmp/{sample}.TIRout"
+     shell:
+         "nhmmer {input.TIR} {input.genome} > {output}"
+#convert both nhmmer output into bed file by using awk script#
+rule awk1:
+     input:
+         "tmp/{sample}.TIRout"
+     output:
+         "tmp/{sample}.TIRout.bed"
+     shell:
+         "awk -f make_bed_hmmOut.awk {input} > {output}"
+rule awk2:
+     input:
+         "tmp/{sample}.nonTIRout"
+     output:
+         "tmp/{sample}.nonTIRout.bed"
+     shell:
+         "awk -f make_bed_hmmOut.awk {input} > {output}"
+##convert both bed file into fasta file by using bedtools#
+rule bedtools_1:
+     input:
+         TIR_bed="tmp/{sample}.TIRout.bed",
+         genome="/genome/{sample}.fa"
+    output:
+         "tmp/{sample}.TIR.fasta"
+     shell:
+         "bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output}"
+rule bedtools_2:
+     input:
+         nonTIR_bed="tmp/{sample}.nonTIRout.bed",
+         genome="/genome/{sample}.fa"
+    output:
+         "tmp/{sample}.nonTIR.fasta"
+     shell:
+         "bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output}"
 
 
