@@ -151,7 +151,7 @@ rule step14:
 ##
 ##
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
-rule find nonTIR:
+rule find_nonTIR:
      input:
          nonTIR="/genome/EG_nonTIRhmm",
          genome="/genome/{sample}.fa"
@@ -160,7 +160,7 @@ rule find nonTIR:
      shell:
          "nhmmer {input.nonTIR} {input.genome} > {output}"
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
-rule find TIR:
+rule find_TIR:
      input：
          TIR="/genome/EG_TIRhmm",
          genome="/genome/{sample}.fa"
