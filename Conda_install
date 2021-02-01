@@ -1,0 +1,5 @@
+conda install -y seqkit
+conda install -y bedtools
+conda install -y samtools
+conda install -c bioconda -y blast
+conda install -c bioconda -y pfam_scan
