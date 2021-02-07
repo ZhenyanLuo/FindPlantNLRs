@@ -49,8 +49,7 @@ rule step4:
      shell:
          "makeblastdb -in {input.fa} -dbtype nucl -parse_seqids \
         -out {output}"
-#Dectect whether there are genes which cannot be captured by using NLR-parser 
-#by using tblastn#
+#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn#
 #remember to form a folder which include blastprotein#
 rule step5:
      input:
@@ -139,7 +138,7 @@ rule step13:
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream#
 rule step14:
      input:
-         genome="genome/{sample}.all_20kbflanking_upper.fa",
+         genome="/genome/{sample}.all_20kbflanking_upper.fa",
          prot="tmp/prothint_sequences.fa"
     # output:
      shell:
@@ -147,9 +146,8 @@ rule step14:
         --prot_seq={input.prot} \
         --species={sample} --epmode --cores=15 --softmasking --prg=ph \
         --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
-##
-##
-##
+
+#-------------------------------------------------------------------------------------------------
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 rule find_nonTIR:
      input:
@@ -183,12 +181,12 @@ rule awk2:
          "tmp/{sample}.nonTIRout.bed"
      shell:
          "awk -f make_bed_hmmOut.awk {input} > {output}"
-##convert both bed file into fasta file by using bedtools#
+#convert both bed file into fasta file by using bedtools#
 rule bedtools_1:
      input:
          TIR_bed="tmp/{sample}.TIRout.bed",
          genome="/genome/{sample}.fa"
-    output:
+     output:
          "tmp/{sample}.TIR.fasta"
      shell:
          "bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output}"
@@ -196,9 +194,78 @@ rule bedtools_2:
      input:
          nonTIR_bed="tmp/{sample}.nonTIRout.bed",
          genome="/genome/{sample}.fa"
-    output:
+     output:
          "tmp/{sample}.nonTIR.fasta"
      shell:
          "bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output}"
+#Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary (why?#
+rule awk:
+     input:
+         nonTIR="tmp/{sample}.nonTIR.fasta",
+         TIR="tmp/{sample}.TIR.fasta"
+     output:
+         nonTIR_200="tmp/{sample}.nonTIR_200.fasta",
+         TIR_200="tmp/{sample}.TIR_200.fasta",
+         NBARC400="tmp/{sample}_NBARC_400.fasta"
+     run:
+         shell("awk "/^>/ {n++} n>200 {exit} 1" {input.nonTIR} > {output.nonTIR_200}") 
+         shell("awk "/^>/ {n++} n>200 {exit} 1" {input.TIR} > {output.TIR_200}")
+         shell("cat {output.nonTIR_200} {output.TIR_200} > {output.NBARC400}")
+#Remove duplicated sequences#
+rule seqkit:
+     input:
+         "tmp/{sample}_NBARC_400.fasta"
+     output:
+         "tmp/{sample}_NBARC.fasta"
+     shell:
+         "seqkit rmdup -D duplicates -n {input} > {output}"
+#Generate alignment by using clustalo#
+rule culstalo:
+     input:
+         "tmp/{sample}_NBARC.fasta"
+     output:
+         "tmp/{sample}_NBARC.sto"
+     shell:
+         "clustalo -i {input} -o {output} --outfmt=st"
+#Build a profile hmm from an alignment#
+rule hmmbuild:
+     input:
+         "tmp/{sample}_NBARC.sto"
+     output:
+         "tmp/{sample}.hmm"
+     shell:
+         "hummbuild -nucleic {output} {input}"
+#Search queries against genome#
+rule nhmmer:
+     input:
+         hmm="tmp/{sample}.hmm",
+         genome="/genome/{sample}.fa"
+     output:
+         "tmp/{sample}_NBARCout"
+     shell:
+         "nhmmer {input.hmm} {input.genome} > {output}"
+#Convert nhmmer output into bed file#
+rule make_bed_hmmout:
+     input:
+         NBARC="tmp/{sample}_NBARCout",
+         awk_script="script/make_bed_hmmOut.awk"
+     output:
+         "tmp/{sample}_NBARC.bed"
+     shell:
+         "awk -F {input.awk_script} {input.NBARC} > {output}"
+#Extract sequences from bed file#
+rule bedtools_NBARC:
+     input:
+         genome="/genome/{sample}.fa",
+         bed="tmp/{sample}_NBARC.bed"
+     output:
+         "tmp/{sample}_NBARC_nt.fasta"
+     shell:
+         "bedtools getfasta -s -fi {input.genome} -bed {input.bed} > {output}"
+#Translate nucleotide NBARC sequeces including extended sequences#
 
 
+
+
+#-------------------------------------------------------------------#
+#Filt 
