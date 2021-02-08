@@ -276,30 +276,38 @@ rule combine:
 
 
 #Translate nucleotide NBARC sequeces including extended sequences#
-
-
+rule translate:
+     input:
+         "tmp/{sample}_NBARC_nt.fasta"
+     output: 
+         "tmp/{sample}_NBARC_aa.fasta"
+     shell:  
+         "translate.py {input} {output}"
 #----------------------------------Filt#
 #Remove * in stop codon#
 rule remove_stop_codon:
      input:
-          
+         "tmp/{sample}_NBARC_nt.fasta"
      output:
-     
+         "tmp/{sample}_NBARC.faa"
      shell:
-          "sed 's/*//g' {input} >{output}"
-
+         "sed 's/*//g' {input} >{output}"
 #Run Interproscan, database options: Pfam, coils, gene3D #
 rule Interproscan:
      input:
-       
-     output:
-
+         "tmp/{sample}_NBARC.faa"
      shell:
-          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}"
-#Predict genes by using AUGUSTUS#
-rule AUGUSTUS:
+          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d /tmp/"
+#extend 20kb upstream and downstream#
+#Predict genes by using braker, remove special header first##Remember to use extended one#
+rule braker:
      input:
-        "tmp/
-
-
+         raw="tmp/{sample}_NBARC_20kb.fasta",
+         genome="/genome/{sample}.fa"
+     output:
+         removed="tmp/{sample}_NBARC_20kb_removed.fasta",
+     run:
+         shell("sed 's/(//;s/)//' {input.raw} > {output.removed} ")
+         shell("braker.pl --cores=6 --genome={input.genome} --prot_seq=$wdir/1.data/RefPlantNLR_aa.fa --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
+/usr/local/augustus/3.3.3/scripts/gtf2gff.pl <$wdir/0.scripts.logs/braker/augustus.hints.gtf --printExon --out=$wdir/0.scripts.logs/braker/augustus.gff3 --gff3")
 
