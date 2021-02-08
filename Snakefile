@@ -262,10 +262,41 @@ rule bedtools_NBARC:
          "tmp/{sample}_NBARC_nt.fasta"
      shell:
          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} > {output}"
+####
+####Combine with NLR_annotator output, and remove duplicated sequences#
+rule combine:
+     input:
+         fasta_annotator="tmp/{sample}.all.20kbflanking.fa",
+         fasta_hmm="tmp/{sample}_NBARC_nt.fasta"
+     output:
+         "tmp/
+         
+
+
+
+
 #Translate nucleotide NBARC sequeces including extended sequences#
 
 
+#----------------------------------Filt#
+#Remove * in stop codon#
+rule remove_stop_codon:
+     input:
+          
+     output:
+     
+     shell:
+          "sed 's/*//g' {input} >{output}"
+
+#Run Interproscan#
+rule Interproscan:
+     input:
+       
+     output:
+
+     shell:
+          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}
 
 
-#-------------------------------------------------------------------#
-#Filt 
+
+
