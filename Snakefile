@@ -147,7 +147,7 @@ rule step14:
         --species={sample} --epmode --cores=15 --softmasking --prg=ph \
         --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
 
-#-------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 rule find_nonTIR:
      input:
