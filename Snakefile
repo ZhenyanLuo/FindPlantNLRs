@@ -288,15 +288,18 @@ rule remove_stop_codon:
      shell:
           "sed 's/*//g' {input} >{output}"
 
-#Run Interproscan#
+#Run Interproscan, database options: Pfam, coils, gene3D #
 rule Interproscan:
      input:
        
      output:
 
      shell:
-          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}
-
+          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}"
+#Predict genes by using AUGUSTUS#
+rule AUGUSTUS:
+     input:
+        "tmp/
 
 
 
