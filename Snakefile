@@ -306,8 +306,16 @@ rule braker:
          genome="/genome/{sample}.fa"
      output:
          removed="tmp/{sample}_NBARC_20kb_removed.fasta",
+         
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed} ")
          shell("braker.pl --cores=6 --genome={input.genome} --prot_seq=$wdir/1.data/RefPlantNLR_aa.fa --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
 /usr/local/augustus/3.3.3/scripts/gtf2gff.pl <$wdir/0.scripts.logs/braker/augustus.hints.gtf --printExon --out=$wdir/0.scripts.logs/braker/augustus.gff3 --gff3")
+rule braker_step2:
+     input:
+          "tmp/augustus.hints.aa"      
+     output:
+          "tmp/{sample}_augustus_aa.fasta"
+     shell:
+          "sed s/\*//g $wdir/0.scripts.logs/braker/augustus.hints.aa >  $wdir/1.data/${prefix_name}_augustus_aa.fasta"
 
