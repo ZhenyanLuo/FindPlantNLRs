@@ -11,6 +11,7 @@ if not os.path.exists(path):
 rule all:
      input:
        expand('genome/{sample}.fa', sample=SAMPLES)
+#---------------Start from NLR_annotator-------------------------------------
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
      input: 
@@ -20,9 +21,8 @@ rule chop_sequence:
      shell: 
          "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input} -o {output} \
          -l 20000 -p 5000" 
-
 #Searching the chopped subsequences for pre-determined NLR-associated motifs#
-rule step2:
+rule search_NLR_motifs:
      input:
          "tmp/{sample}.choppedseq.fa"
      output:
@@ -33,7 +33,7 @@ rule step2:
         -x ~/NLR-parser/scripts/meme.xml -i {input} \
         -c {output}"
 #Generate the GFF format of NLR loci for the searched motifs#
-rule step3:
+rule NLR_annotator:
      input:
          "tmp/{sample}.NLRparser.xml"
      output:
@@ -41,8 +41,9 @@ rule step3:
      shell:
          "java -jar ~/NLR-parser/scripts/NLR-Annotator.jar -i {input} \
         -g {output}"
+#-----------------Use blast to identify genes which cannot be detected by NLR annotator pipeline---------
 #Make a genome database for detecting nucleotide or protein query sequence#
-rule step4:
+rule build_blast_database:
      input:
          fa="genome/{sample}.fa"
      output:
@@ -52,7 +53,7 @@ rule step4:
         -out {output}"
 #Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn#
 #remember to form a folder which include blastprotein#
-rule step5:
+rule tblastn:
      input:
          blastprotein="blastprotein/blastprotein",
          genomebase="tmp/{sample}.genome_nucl_database"
@@ -62,7 +63,7 @@ rule step5:
          "tblastn -query {input.blastprotein} -db {input.genomebase} -evalue 0.001 \
          -outfmt 6 > {output}"
 #Convert tblastn file into bed, get coloumn 1 2 9 10#
-rule step6:
+rule tblastn_to_bed:
      input:
          "tmp/{sample}.tblastnout.outfmt6"
      output:
@@ -70,7 +71,7 @@ rule step6:
      shell:
          """cat {input} | awk "{{print $1"\\t"$2"\\t"$9"\\t"$10}}" > {output}"""
 #Indexing reference sequence#
-rule step7:
+rule index_ref_seq:
      input:
          "genome/{sample}.fa"
      output:
@@ -78,7 +79,7 @@ rule step7:
      shell:
          "samtools faidx {input}" 
 #Create genome file. (?)#
-rule step8:
+rule convert_genome_format:
      input:
          "genome/{sample}.fa.fai"
      output:
@@ -86,7 +87,7 @@ rule step8:
      shell:
          "cut -d $'\t' -f1,2 {input} > {output}"
 #Generate 20kb flanking BED file for blastx file#
-rule step9:
+rule generate_20kb_flanking_bed_for_blastx:
      input:
          bed="tmp/{sample}.tblastnout.bed",
          genomefile="genome/{sample}.genomefile"
@@ -95,7 +96,7 @@ rule step9:
      shell:
          """bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - > {output}"""
 #Generate 20kb flanking BED file for NLR-parser file#
-rule step10:
+rule generate_20kb_flanking _bed_for_NLR-parser:
      input:
          gff="tmp/{sample}.NLRparser.gff",
          genomefile="genome/{sample}.genomefile"
@@ -104,7 +105,7 @@ rule step10:
      shell:
         """ bedtools slop -b 20000 -s -i {input.gff} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
 #Merge the two bed files (combine blastn.bed and NLRparser.bed into one BED file#
-rule step11:
+rule merge_bed:
      input:
          tblastn="tmp/{sample}.tblastn.20kbflanking.bed",
          NLRparser="tmp/{sample}.NLRparser.20kbflanking.bed"
@@ -113,7 +114,7 @@ rule step11:
      shell:
          "cat {input.tblastn} {input.NLRparser} | bedtools sort -i - | bedtools merge -d 100 -i - > {output}"
 #Convert the merged bed file into fasta format (? required double check)#
-rule step12:
+rule bed_to_fasta:
      input:
          genome="genome/{sample}.fa",
          flankingbed="tmp/{sample}.all.20kbflanking.bed"
@@ -122,7 +123,7 @@ rule step12:
      shell:
          "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
-rule step13:
+rule convert_format:
      input:
          "tmp/{sample}.all.20kbflanking.fa",
      output:
@@ -130,7 +131,7 @@ rule step13:
      shell:
          "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"         
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream#
-rule step14:
+rule predict_by_braker:
      input:
          genome="/genome/{sample}.all_20kbflanking_upper.fa",
          prot="tmp/prothint_sequences.fa"
@@ -228,11 +229,10 @@ rule nhmmer:
 rule make_bed_hmmout:
      input:
          NBARC="tmp/{sample}_NBARCout",
-         awk_script="script/make_bed_hmmOut.awk"
      output:
          "tmp/{sample}_NBARC.bed"
      shell:
-         "awk -F {input.awk_script} {input.NBARC} > {output}"
+         "awk -F script/make_bed_hmmOut.awk {input.NBARC} > {output}"
 #Extract sequences from bed file#
 rule bedtools_NBARC:
      input:
