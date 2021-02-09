@@ -319,7 +319,21 @@ rule braker_step2:
           "tmp/{sample}_augustus_aa.fasta"
      shell:
           "sed s/\*//g {input} > {output}"
-#Combine the result of interproscan and braker together#
+#Filt the output based on domain identified#
+#PF00931 = NB-ARC domain, G3DSA:3.40.50.300 = P-loop containing nucleoside triphosphate hydrolase, PF08263 = LRR, PF12799 = LRR, PF13306 = LRR, PF13855 = LRR, PF13516 = LRR,
+#G3DSA:1.10.8.430 = Gene3D LRR. Also need to search for this Gene3D output in interproscan because Pfam does not recognise all LRR signals.
+#Also look for TIR domains, Coils etc.
+#PF01582 = TIR#Combine the result of interproscan and braker together to identify NBARC#
+#Identify NB_ARC: 
+rule combine_interproscan_braker:
+     input:
+          tsv="tmp/{sample}.tsv",
+          gff3="tmp/augustus_out.gff3"
+     output:
+          "tmp/{sample}_NBARC.gff3"     
+     shell:
+          "run_NBARC.sh {input.tsv} {input.gff3} > {output}"
+#Identify TIR_NB: 
 rule combine_interproscan_braker:
      input:
           tsv="tmp/{sample}.tsv",
@@ -328,3 +342,26 @@ rule combine_interproscan_braker:
           "tmp/{sample}_TIRNB.gff3"     
      shell:
           "run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
+#Identify NB_LRR: 
+rule combine_interproscan_braker:
+     input:
+          tsv="tmp/{sample}.tsv",
+          gff3="tmp/augustus_out.gff3"
+     output:
+          "tmp/{sample}_NBLRR.gff3"     
+     shell:
+          "run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
+#Identify TIR: 
+rule combine_interproscan_braker:
+     input:
+          tsv="tmp/{sample}.tsv",
+          gff3="tmp/augustus_out.gff3"
+     output:
+          "tmp/{sample}_TIR.gff3"     
+     shell:
+          "run_TIR.sh {input.tsv} {input.gff3} > {output}"
+               
+               
+
+
+
