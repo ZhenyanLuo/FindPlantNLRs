@@ -360,7 +360,9 @@ rule combine_interproscan_braker:
           "tmp/{sample}_TIR.gff3"     
      shell:
           "run_TIR.sh {input.tsv} {input.gff3} > {output}"
-               
+###----------------------------------------------------------------
+#Detection of NLR pairs
+
                
 
 
