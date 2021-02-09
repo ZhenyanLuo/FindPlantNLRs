@@ -1,5 +1,6 @@
-#Necessary packages:NLR-parser, NLR-annotator, BRAKER, samtools, blast, interproscan#
-
+#Necessary packages:NLR-parser, NLR-annotator, BRAKER, samtools, blast, interproscan, etc.#
+#use bash conda_install.sh command to install neccessary modules#
+#Adapted from Tamene Tolessa's script#
 SAMPLES = ["name_of_genome"]
 #Making a temp folder#
 import os
@@ -92,9 +93,7 @@ rule step9:
      output:
          "tmp/{sample}.tblastn.20kbflanking.bed"
      shell:
-         """bedtools slop -b 20000 -s -i {input.bed} \
-        -g {input.genomefile} | bedtools sort -i - | bedtools merge \
-        -s -d 100 -i - > {output}"""
+         """bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - > {output}"""
 #Generate 20kb flanking BED file for NLR-parser file#
 rule step10:
      input:
@@ -103,9 +102,7 @@ rule step10:
      output:
          "tmp/{sample}.NLRparser.20kbflanking.bed"
      shell:
-        """ bedtools slop -b 20000 -s -i {input.gff} -g {input.genomefile} \
-        | bedtools sort -i - | bedtools merge -s -d 100 -i - \
-        >  {output}"""
+        """ bedtools slop -b 20000 -s -i {input.gff} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
 #Merge the two bed files (combine blastn.bed and NLRparser.bed into one BED file#
 rule step11:
      input:
@@ -114,9 +111,7 @@ rule step11:
      output:
          "tmp/{sample}.all.20kbflanking.bed"
      shell:
-         "cat {input.tblastn} {input.NLRparser} \
-        | bedtools sort -i - \
-        | bedtools merge -d 100 -i - > {output}"
+         "cat {input.tblastn} {input.NLRparser} | bedtools sort -i - | bedtools merge -d 100 -i - > {output}"
 #Convert the merged bed file into fasta format (? required double check)#
 rule step12:
      input:
@@ -125,8 +120,7 @@ rule step12:
      output:
          "tmp/{sample}.all.20kbflanking.fa"  
      shell:
-         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} \
-        > {output}"
+         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule step13:
      input:
@@ -134,7 +128,7 @@ rule step13:
      output:
          "tmp/{sample}.all.20kbflanking_upper.fa"
      shell:
-         "awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}'{input}>{output}"         
+         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"         
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream#
 rule step14:
      input:
@@ -147,25 +141,19 @@ rule step14:
         --species={sample} --epmode --cores=15 --softmasking --prg=ph \
         --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
 
-#------------------------------------------------------------------------------------------------
-#use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
-rule find_nonTIR:
-     input:
-         nonTIR="/genome/EG_nonTIRhmm",
-         genome="/genome/{sample}.fa"
-     output:
-         "tmp/{sample}.nonTIRout"
-     shell:
-         "nhmmer {input.nonTIR} {input.genome} > {output}"
+#Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 rule find_TIR:
-     input：
+     input:
+         nonTIR="/genome/EG_nonTIRhmm",
          TIR="/genome/EG_TIRhmm",
          genome="/genome/{sample}.fa"
      output:
-         "tmp/{sample}.TIRout"
-     shell:
-         "nhmmer {input.TIR} {input.genome} > {output}"
+         TIR_out="tmp/{sample}.TIRout"
+         nonTIR_out="tmp/{sample}.nonTIRout"
+     run:
+         shell("nhmmer {input.nonTIR} {input.genome} > {output.nonTIR_out}")
+         shell("nhmmer {input.TIR} {input.genome} > {output.TIR_out}")
 #convert both nhmmer output into bed file by using awk script#
 rule awk:
      input:
@@ -211,7 +199,7 @@ rule seqkit:
      shell:
          "seqkit rmdup -D duplicates -n {input} > {output}"
 #Generate alignment by using clustalo#
-rule culstalo:
+rule clustalo:
      input:
          "tmp/{sample}_NBARC.fasta"
      output:
@@ -236,6 +224,7 @@ rule nhmmer:
      shell:
          "nhmmer {input.hmm} {input.genome} > {output}"
 #Convert nhmmer output into bed file#
+#Required double-check#
 rule make_bed_hmmout:
      input:
          NBARC="tmp/{sample}_NBARCout",
