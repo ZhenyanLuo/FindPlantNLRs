@@ -14,11 +14,11 @@ rule all:
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
      input: 
-         fa="genome/{sample}.fa"
+         "genome/{sample}.fa"
      output:
          "tmp/{sample}.choppedseq.fa"
      shell: 
-         "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input.fa} -o {output} \
+         "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input} -o {output} \
          -l 20000 -p 5000" 
 
 #Searching the chopped subsequences for pre-determined NLR-associated motifs#
@@ -145,9 +145,9 @@ rule step14:
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 rule find_TIR:
      input:
-         nonTIR="/genome/EG_nonTIRhmm",
-         TIR="/genome/EG_TIRhmm",
-         genome="/genome/{sample}.fa"
+         nonTIR="genome/EG_nonTIRhmm",
+         TIR="genome/EG_TIRhmm",
+         genome="genome/{sample}.fa"
      output:
          TIR_out="tmp/{sample}.TIRout"
          nonTIR_out="tmp/{sample}.nonTIRout"
@@ -170,7 +170,7 @@ rule bedtools:
      input:
          TIR_bed="tmp/{sample}.TIRout.bed",
          nonTIR_bed="tmp/{sample}.nonTIRout.bed",
-         genome="/genome/{sample}.fa"
+         genome="genome/{sample}.fa"
      output:
          TIR_fasta="tmp/{sample}.TIR.fasta",
          nonTIR_fasta="tmp/{sample}.nonTIR.fasta"
@@ -284,8 +284,8 @@ rule Interproscan:
 rule braker:
      input:
          raw="tmp/{sample}_NBARC_20kb.fasta",
-         genome="/genome/{sample}.fa",
-         ref="/genome/RefPlantNLR_aa.fa"
+         genome="genome/{sample}.fa",
+         ref="genome/RefPlantNLR_aa.fa"
      output:
          removed="tmp/{sample}_NBARC_20kb_removed.fasta",
               
