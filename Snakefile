@@ -167,37 +167,28 @@ rule find_TIR:
      shell:
          "nhmmer {input.TIR} {input.genome} > {output}"
 #convert both nhmmer output into bed file by using awk script#
-rule awk1:
+rule awk:
      input:
-         "tmp/{sample}.TIRout"
+         TIRout="tmp/{sample}.TIRout",
+         nonTIRout="tmp/{sample}.nonTIRout"
      output:
-         "tmp/{sample}.TIRout.bed"
-     shell:
-         "awk -f make_bed_hmmOut.awk {input} > {output}"
-rule awk2:
-     input:
-         "tmp/{sample}.nonTIRout"
-     output:
-         "tmp/{sample}.nonTIRout.bed"
-     shell:
-         "awk -f make_bed_hmmOut.awk {input} > {output}"
+         TIRoutbed="tmp/{sample}.TIRout.bed",
+         nonTIRoutbed="tmp/{sample}.TIRout.bed"
+     run:
+         shell("awk -f make_bed_hmmOut.awk {input.TIRout} > {output.TIRoutbed}")
+         shell("awk -f make_bed_hmmOut.awk {input.nonTIRout} > {output.nonTIRoutbed}")
 #convert both bed file into fasta file by using bedtools#
-rule bedtools_1:
+rule bedtools:
      input:
          TIR_bed="tmp/{sample}.TIRout.bed",
-         genome="/genome/{sample}.fa"
-     output:
-         "tmp/{sample}.TIR.fasta"
-     shell:
-         "bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output}"
-rule bedtools_2:
-     input:
          nonTIR_bed="tmp/{sample}.nonTIRout.bed",
          genome="/genome/{sample}.fa"
      output:
-         "tmp/{sample}.nonTIR.fasta"
-     shell:
-         "bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output}"
+         TIR_fasta="tmp/{sample}.TIR.fasta",
+         nonTIR_fasta="tmp/{sample}.nonTIR.fasta"
+     run:
+         shell("bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output.TIR_fasta}")
+         shell("bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output.nonTIR_fasta}")
 #Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary (why?#
 rule awk:
      input:
