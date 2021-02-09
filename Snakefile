@@ -319,4 +319,12 @@ rule braker_step2:
           "tmp/{sample}_augustus_aa.fasta"
      shell:
           "sed s/\*//g {input} > {output}"
-
+#Combine the result of interproscan and braker together#
+rule combine_interproscan_braker:
+     input:
+          tsv="tmp/{sample}.tsv",
+          gff3="tmp/augustus_out.gff3"
+     output:
+          "tmp/{sample}_TIRNB.gff3"     
+     shell:
+          "run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
