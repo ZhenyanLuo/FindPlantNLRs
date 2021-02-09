@@ -280,16 +280,19 @@ rule Interproscan:
           "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d /tmp/"
 #extend 20kb upstream and downstream#
 #Predict genes by using braker, remove special header first##Remember to use extended one#
+#RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
 rule braker:
      input:
          raw="tmp/{sample}_NBARC_20kb.fasta",
-         genome="/genome/{sample}.fa"
+         genome="/genome/{sample}.fa",
+         ref="/genome/RefPlantNLR_aa.fa"
      output:
          removed="tmp/{sample}_NBARC_20kb_removed.fasta",
-         
+              
+              
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed} ")
-         shell("braker.pl --cores=6 --genome={input.genome} --prot_seq=$wdir/1.data/RefPlantNLR_aa.fa --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
+         shell("braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
 /usr/local/augustus/3.3.3/scripts/gtf2gff.pl <$wdir/0.scripts.logs/braker/augustus.hints.gtf --printExon --out=$wdir/0.scripts.logs/braker/augustus.gff3 --gff3")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
