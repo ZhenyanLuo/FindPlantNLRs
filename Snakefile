@@ -143,7 +143,8 @@ rule convert_format:
 #        --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
 #
 #Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
-#use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
+#Use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
+#Peri has already prepared hmm profiles which are named as EG_nonTIRhmm and EG_TIRhmm respectively. 
 rule find_TIR:
      input:
          nonTIR="genome/EG_nonTIRhmm",
@@ -214,8 +215,8 @@ rule hmmbuild:
      output:
          "tmp/{sample}.hmm"
      shell:
-         "hummbuild -nucleic {output} {input}"
-#Search queries against genome#
+         "hmmbuild -nucleic {output} {input}"
+#Use hmm profile built to search queries against genome#
 rule nhmmer:
      input:
          hmm="tmp/{sample}.hmm",
@@ -228,7 +229,7 @@ rule nhmmer:
 #Required double-check#
 rule make_bed_hmmout:
      input:
-         NBARC="tmp/{sample}_NBARCout",
+         NBARC="tmp/{sample}_NBARCout"
      output:
          "tmp/{sample}_NBARC.bed"
      shell:
@@ -286,7 +287,7 @@ rule translate:
      output: 
          "tmp/{sample}_NBARC_aa.fasta"
      shell:  
-         "translate.py {input} {output}"
+         "script/translate.py {input} {output}"
 #----------------------------------Filt#
 #Remove * in stop codon#
 rule remove_stop_codon:
@@ -335,7 +336,7 @@ rule combine_interproscan_braker:
           tsv="tmp/{sample}.tsv",
           gff3="tmp/augustus_out.gff3"
      output:
-          "tmp/{sample}_NBARC.gff3"     
+          "result/{sample}_NBARC.gff3"     
      shell:
           "run_NBARC.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR_NB: 
@@ -344,7 +345,7 @@ rule combine_interproscan_braker:
           tsv="tmp/{sample}.tsv",
           gff3="tmp/augustus_out.gff3"
      output:
-          "tmp/{sample}_TIRNB.gff3"     
+          "result/{sample}_TIRNB.gff3"     
      shell:
           "run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
 #Identify NB_LRR: 
@@ -353,7 +354,7 @@ rule combine_interproscan_braker:
           tsv="tmp/{sample}.tsv",
           gff3="tmp/augustus_out.gff3"
      output:
-          "tmp/{sample}_NBLRR.gff3"     
+          "result/{sample}_NBLRR.gff3"     
      shell:
           "run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR: 
@@ -362,7 +363,7 @@ rule combine_interproscan_braker:
           tsv="tmp/{sample}.tsv",
           gff3="tmp/augustus_out.gff3"
      output:
-          "tmp/{sample}_TIR.gff3"     
+          "result/{sample}_TIR.gff3"     
      shell:
           "run_TIR.sh {input.tsv} {input.gff3} > {output}"
 ###----------------------------------------------------------------
