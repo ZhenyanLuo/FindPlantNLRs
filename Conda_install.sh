@@ -10,3 +10,4 @@ gunzip interproscan-5.48-83.0-64-bit.tar.gz
 git clone https://github.com/Gaius-Augustus/BRAKER.git
 git clone https://github.com/steuernb/NLR-Annotator.git
 git clone https://github.com/peritob/Myrtaceae_NLR_workflow.git
+git clone https://github.com/krasileva-group/plant_rgenes.git
