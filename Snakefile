@@ -387,7 +387,7 @@ rule grep_hmmsearch:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"
      shell:
            "grep -v '#' {input} | sort -k5,5n | cut -d ' ' -f1 | uniq > {output}"
-## Using the sequence ID and seqtk to pull out protein sequences of NB-ARC domains
+#Using the sequence ID and seqtk to pull out protein sequences of NB-ARC domains
 rule seqtk:
      input:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"   
@@ -395,6 +395,38 @@ rule seqtk:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      shell:   
            "seqtk subseq ./braker/augustus.hints.aa {input} > {output}"
+#Removing asterisk (*) from the end of each sequences
+rule sed:
+     input:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"    
+     shell:
+           "sed -i 's/*//g' {input}"
+#Generate empty directory to store Interproscan output
+rule mkdir:
+     output:
+           "Interpro_{sample}"
+     shell:
+           "mkdir -p {output}"
+#Using InterProScan to detect the TIR, LRR and COIL sub-classes of NB-ARC domains
+#Remember to update the path of interproscan.sh
+rule interproscan_NBARC:
+     input:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"    
+     output:
+           "./Interpro_{sample}" 
+     shell:
+           "interproscan/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {output}"
+#Search NB-ARC domain against library of Pfam
+rule pfam_scan:
+     input:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
+     output:
+           mkdir="./Pfan_{sample}",
+           Pfamscan="tmp/{genomebase}.protein.fa_pfamscan.txt"
+     run:
+           shell("mkdir -p {output.mkdir}")
+           shell("./script/pfam_scan.pl -fasta {input} -dir ~/ddatabase/PfamScan -as -cpu 16 -outfile {output.Pfamscan}")
+
 
 
 
