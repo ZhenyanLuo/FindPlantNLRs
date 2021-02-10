@@ -7,7 +7,7 @@ import os
 path = 'tmp'
 if not os.path.exists(path):
        os.mkdir(path)
-
+os.mkdir(result)
 rule all:
      input:
        expand('genome/{sample}.fa', sample=SAMPLES)
@@ -130,18 +130,18 @@ rule convert_format:
          "tmp/{sample}.all.20kbflanking_upper.fa"
      shell:
          "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"         
-#Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream#
-rule predict_by_braker:
-     input:
-         genome="/genome/{sample}.all_20kbflanking_upper.fa",
-         prot="tmp/prothint_sequences.fa"
-    # output:
-     shell:
-         "braker.pl --genome={input.genome} \
-        --prot_seq={input.prot} \
-        --species={sample} --epmode --cores=15 --softmasking --prg=ph \
-        --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
-
+#Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream##############################################################
+#rule predict_by_braker:
+#    input:
+#         genome="/genome/{sample}.all_20kbflanking_upper.fa",
+#         prot="tmp/prothint_sequences.fa"
+#    # output:
+#     shell:
+#         "braker.pl --genome={input.genome} \
+#        --prot_seq={input.prot} \
+#        --species={sample} --epmode --cores=15 --softmasking --prg=ph \
+#        --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
+#
 #Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
 #use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 rule find_TIR:
@@ -234,27 +234,51 @@ rule make_bed_hmmout:
      shell:
          "awk -F script/make_bed_hmmOut.awk {input.NBARC} > {output}"
 #Extract sequences from bed file#
-rule bedtools_NBARC:
-     input:
-         genome="/genome/{sample}.fa",
-         bed="tmp/{sample}_NBARC.bed"
-     output:
-         "tmp/{sample}_NBARC_nt.fasta"
-     shell:
-         "bedtools getfasta -s -fi {input.genome} -bed {input.bed} > {output}"
+#rule bedtools_NBARC:
+#     input:
+#         genome="/genome/{sample}.fa",
+#         bed="tmp/{sample}_NBARC.bed"
+#     output:
+#         "tmp/{sample}_NBARC_nt.fasta"
+#     shell:
+#         "bedtools getfasta -s -fi {input.genome} -bed {input.bed} > {output}"
 ####
+#Extend 20kb upstream and downstream##Remember to double check whether bed file can be used to generate 20kb flanking bed
+rule generate_20kb_flanking_bed_for_NBARC:
+     input:
+         bed="tmp/{sample}_NBARC.bed",
+         genomefile="genome/{sample}.genomefile"
+     output:
+         "tmp/{sample}.NBARC.20kbflanking.bed"
+     shell:
+        """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
+#Convert 20kb flanking bed into fasta file#
+rule bed_to_fasta:
+     input:
+         genome="genome/{sample}.fa",
+         flankingbed="tmp/{sample}.NBARC.20kbflanking.bed"
+     output:
+         "tmp/{sample}.NBARC.20kbflanking.fa"
+     shell:
+         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
+#Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
+rule convert_format:
+     input:
+         "tmp/{sample}.NBARC.20kbflanking.fa",
+     output:
+         "tmp/{sample}.NBARC.20kbflanking_upper.fa"
+     shell:
+         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"   
 ####Combine with NLR_annotator output, and remove duplicated sequences#
 rule combine:
      input:
          fasta_annotator="tmp/{sample}.all.20kbflanking.fa",
-         fasta_hmm="tmp/{sample}_NBARC_nt.fasta"
+         fasta_hmm="tmp/{sample}.NBARC.20kbflanking_upper.fa"
      output:
-         "tmp/
-         
-
-
-
-
+         "tmp/{sample}.20kbflanking.fa
+     shell:
+         "cat {input.fasta_annotator} {input.fasta_hmm} > {output}"
+#Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
 rule translate:
      input:
@@ -278,7 +302,6 @@ rule Interproscan:
          "tmp/{sample}_NBARC.faa"
      shell:
           "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d /tmp/"
-#extend 20kb upstream and downstream#
 #Predict genes by using braker, remove special header first##Remember to use extended one#
 #RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
 rule braker:
@@ -287,8 +310,7 @@ rule braker:
          genome="genome/{sample}.fa",
          ref="genome/RefPlantNLR_aa.fa"
      output:
-         removed="tmp/{sample}_NBARC_20kb_removed.fasta",
-              
+         removed="tmp/{sample}_NBARC_20kb_removed.fasta"
               
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed} ")
