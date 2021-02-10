@@ -19,8 +19,7 @@ rule chop_sequence:
      output:
          "tmp/{sample}.choppedseq.fa"
      shell: 
-         "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input} -o {output} \
-         -l 20000 -p 5000" 
+         "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000" 
 #Searching the chopped subsequences for pre-determined NLR-associated motifs#
 rule search_NLR_motifs:
      input:
@@ -289,22 +288,25 @@ rule translate:
      shell:  
          "script/translate.py {input} {output}"
 #----------------------------------Filt#
-#Remove * in stop codon#
+#Remove * in stop codon, otherwise interproscan will not work#
 rule remove_stop_codon:
      input:
          "tmp/{sample}_NBARC_nt.fasta"
      output:
          "tmp/{sample}_NBARC.faa"
      shell:
-         "sed 's/*//g' {input} >{output}"
+         "sed 's/*//g' {input} > {output}"
 #Run Interproscan, database options: Pfam, coils, gene3D #
 rule Interproscan:
      input:
          "tmp/{sample}_NBARC.faa"
+     output:
+         "tmp/{sample}.tsv
      shell:
-          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d /tmp/"
+          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}"
 #Predict genes by using braker, remove special header first##Remember to use extended one#
 #RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
+#Remember to correct the path for braker.pl#
 rule braker:
      input:
          raw="tmp/{sample}_NBARC_20kb.fasta",
@@ -312,11 +314,10 @@ rule braker:
          ref="genome/RefPlantNLR_aa.fa"
      output:
          removed="tmp/{sample}_NBARC_20kb_removed.fasta"
-              
      run:
-         shell("sed 's/(//;s/)//' {input.raw} > {output.removed} ")
-         shell("braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
-/usr/local/augustus/3.3.3/scripts/gtf2gff.pl <$wdir/0.scripts.logs/braker/augustus.hints.gtf --printExon --out=$wdir/0.scripts.logs/braker/augustus.gff3 --gff3")
+         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
+         shell("script/braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
+/usr/local/augustus/3.3.3/scripts/gtf2gff.pl /braker/augustus.hints.gtf --printExon --out=/braker/augustus.gff3 --gff3")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
@@ -325,7 +326,7 @@ rule braker_step2:
           "tmp/{sample}_augustus_aa.fasta"
      shell:
           "sed s/\*//g {input} > {output}"
-#Filt the output based on domain identified#
+#Filt the output based on domain identified#---------------------------------------Peris' s version-----------------------------------------------------------------
 #PF00931 = NB-ARC domain, G3DSA:3.40.50.300 = P-loop containing nucleoside triphosphate hydrolase, PF08263 = LRR, PF12799 = LRR, PF13306 = LRR, PF13855 = LRR, PF13516 = LRR,
 #G3DSA:1.10.8.430 = Gene3D LRR. Also need to search for this Gene3D output in interproscan because Pfam does not recognise all LRR signals.
 #Also look for TIR domains, Coils etc.
@@ -366,8 +367,36 @@ rule combine_interproscan_braker:
           "result/{sample}_TIR.gff3"     
      shell:
           "run_TIR.sh {input.tsv} {input.gff3} > {output}"
-###----------------------------------------------------------------
-#Detection of NLR pairs
+###Tamene's version, original one used PF00931 and Pfam-A.hmm----------------------------------------------------------------
+#Let's start from using hmm profile built ({sample}.hmm) #
+#add augustus.hints.aa#
+rule hmmsearch:
+     input:
+           hmm="tmp/{sample}.hmm",
+           hint="braker/augustus.hints.aa"
+     output:
+           noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
+           tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
+     shell:
+           "hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {input.hmm} {input.hint}"
+#Sorting out and cutting of sequence IDs of domains
+rule grep_hmmsearch:
+     input:
+           "tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
+     output:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"
+     shell:
+           "grep -v '#' {input} | sort -k5,5n | cut -d ' ' -f1 | uniq > {output}"
+## Using the sequence ID and seqtk to pull out protein sequences of NB-ARC domains
+rule seqtk:
+     input:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"   
+     output:
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
+     shell:   
+           "seqtk subseq ./braker/augustus.hints.aa {input} > {output}"
+
+
 
                
 
