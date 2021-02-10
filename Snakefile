@@ -443,12 +443,13 @@ rule K_parse_fusion:
            verbose="tmp/{sample}.protein.fa_pfamscan_parsed.verbose",
            db="genome/db_descriptions.txt"
       output:
-           mkdir="./Pfam_{sample}_parser",   
-               
+           mkdir="./Pfam_{sample}_parser"
       run:
            shell("mkdir -p {output.mkdir}")
            shell("mv {input.verbose} {output.mkdir}")
            shell("perl ~/scripts/plant_rgenes/processing_scripts/K-parse_Pfam_domains_NLR-fusions-v2.4.1.pl --indir {output.mkdir} --evalue 0.001 -o {output.mkdir} -d {input.db}")
-
-
+#Run the filt script#
+rule filt_script:
+      input:
+           
 
