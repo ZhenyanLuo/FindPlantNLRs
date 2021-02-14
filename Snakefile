@@ -40,27 +40,6 @@ rule NLR_annotator:
      shell:
          "java -jar ~/NLR-parser/scripts/NLR-Annotator.jar -i {input} \
         -g {output}"
-#-----------------Use blast to identify genes which cannot be detected by NLR annotator pipeline---------
-#Make a genome database for detecting nucleotide or protein query sequence#
-rule build_blast_database:
-     input:
-         fa="genome/{sample}.fa"
-     output:
-         "tmp/{sample}.genome_nucl_database"
-     shell:
-         "makeblastdb -in {input.fa} -dbtype nucl -parse_seqids \
-        -out {output}"
-#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn#
-#remember to form a folder which include blastprotein#
-rule tblastn:
-     input:
-         blastprotein="blastprotein/blastprotein",
-         genomebase="tmp/{sample}.genome_nucl_database"
-     output:
-         "tmp/{sample}.tblastnout.outfmt6"
-     shell:
-         "tblastn -query {input.blastprotein} -db {input.genomebase} -evalue 0.001 \
-         -outfmt 6 > {output}"
 #Convert tblastn file into bed, get coloumn 1 2 9 10#
 rule tblastn_to_bed:
      input:
