@@ -40,14 +40,6 @@ rule NLR_annotator:
      shell:
          "java -jar ~/NLR-parser/scripts/NLR-Annotator.jar -i {input} \
         -g {output}"
-#Convert tblastn file into bed, get coloumn 1 2 9 10#
-rule tblastn_to_bed:
-     input:
-         "tmp/{sample}.tblastnout.outfmt6"
-     output:
-         "tmp/{sample}.tblastnout.bed"
-     shell:
-         """cat {input} | awk "{{print $1"\\t"$2"\\t"$9"\\t"$10}}" > {output}"""
 #Indexing reference sequence#
 rule index_ref_seq:
      input:
@@ -64,15 +56,6 @@ rule convert_genome_format:
          "genome/{sample}.genomefile"
      shell:
          "cut -d $'\t' -f1,2 {input} > {output}"
-#Generate 20kb flanking BED file for blastx file#
-rule generate_20kb_flanking_bed_for_blastx:
-     input:
-         bed="tmp/{sample}.tblastnout.bed",
-         genomefile="genome/{sample}.genomefile"
-     output:
-         "tmp/{sample}.tblastn.20kbflanking.bed"
-     shell:
-         """bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - > {output}"""
 #Generate 20kb flanking BED file for NLR-parser file#
 rule generate_20kb_flanking _bed_for_NLR-parser:
      input:
@@ -82,30 +65,21 @@ rule generate_20kb_flanking _bed_for_NLR-parser:
          "tmp/{sample}.NLRparser.20kbflanking.bed"
      shell:
         """ bedtools slop -b 20000 -s -i {input.gff} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
-#Merge the two bed files (combine blastn.bed and NLRparser.bed into one BED file#
-rule merge_bed:
-     input:
-         tblastn="tmp/{sample}.tblastn.20kbflanking.bed",
-         NLRparser="tmp/{sample}.NLRparser.20kbflanking.bed"
-     output:
-         "tmp/{sample}.all.20kbflanking.bed"
-     shell:
-         "cat {input.tblastn} {input.NLRparser} | bedtools sort -i - | bedtools merge -d 100 -i - > {output}"
 #Convert the merged bed file into fasta format (? required double check)#
 rule bed_to_fasta:
      input:
          genome="genome/{sample}.fa",
-         flankingbed="tmp/{sample}.all.20kbflanking.bed"
+         flankingbed="tmp/{sample}.NLRparser.20kbflanking.bed"
      output:
-         "tmp/{sample}.all.20kbflanking.fa"  
+         "tmp/{sample}.NLRparser.20kbflanking.fa"  
      shell:
          "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule convert_format:
      input:
-         "tmp/{sample}.all.20kbflanking.fa",
+         "tmp/{sample}.NLRparser.20kbflanking.fa",
      output:
-         "tmp/{sample}.all.20kbflanking_upper.fa"
+         "tmp/{sample}.NLRparser.20kbflanking_upper.fa"
      shell:
          "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"         
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream##############################################################
@@ -251,34 +225,32 @@ rule convert_format:
 ####Combine with NLR_annotator output, and remove duplicated sequences#
 rule combine:
      input:
-         fasta_annotator="tmp/{sample}.all.20kbflanking.fa",
+         fasta_annotator="tmp/{sample}.NLRparser.20kbflanking_upper.fa",
          fasta_hmm="tmp/{sample}.NBARC.20kbflanking_upper.fa"
      output:
-         "tmp/{sample}.20kbflanking.fa
+         "tmp/{sample}.all_20kbflanking.fa"
      shell:
          "cat {input.fasta_annotator} {input.fasta_hmm} > {output}"
 #Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
 rule translate:
      input:
-         "tmp/{sample}_NBARC_nt.fasta"
+         "tmp/{sample}.all_20kbflanking.fa"
      output: 
-         "tmp/{sample}_NBARC_aa.fasta"
+         "tmp/{sample}.all_20kbflanking.faa"
      shell:  
          "script/translate.py {input} {output}"
 #----------------------------------Filt#
 #Remove * in stop codon, otherwise interproscan will not work#
 rule remove_stop_codon:
      input:
-         "tmp/{sample}_NBARC_nt.fasta"
-     output:
-         "tmp/{sample}_NBARC.faa"
+         "tmp/{sample}.all_20kbflanking.faa"
      shell:
-         "sed 's/*//g' {input} > {output}"
+         "sed -i 's/*//g' {input}"
 #Run Interproscan, database options: Pfam, coils, gene3D #
 rule Interproscan:
      input:
-         "tmp/{sample}_NBARC.faa"
+         "tmp/{sample}.all_20kbflanking.faa"
      output:
          "tmp/{sample}.tsv
      shell:
@@ -286,13 +258,14 @@ rule Interproscan:
 #Predict genes by using braker, remove special header first##Remember to use extended one#
 #RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
 #Remember to correct the path for braker.pl#
+####Please double check#
 rule braker:
      input:
-         raw="tmp/{sample}_NBARC_20kb.fasta",
+         raw="tmp/{sample}.all_20kbflanking.faa",
          genome="genome/{sample}.fa",
          ref="genome/RefPlantNLR_aa.fa"
      output:
-         removed="tmp/{sample}_NBARC_20kb_removed.fasta"
+         removed="tmp/{sample}_all_20kbflanking_removed.fasta"
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("script/braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}
