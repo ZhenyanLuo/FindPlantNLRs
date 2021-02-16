@@ -131,6 +131,7 @@ rule bedtools:
      run:
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output.TIR_fasta}")
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output.nonTIR_fasta}")
+
 #Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary (why?#
 rule awk:
      input:
@@ -172,7 +173,7 @@ rule hmmbuild:
 rule nhmmer:
      input:
          hmm="tmp/{sample}.hmm",
-         genome="/genome/{sample}.fa"
+         genome="genome/{sample}.fa"
      output:
          "tmp/{sample}_NBARCout"
      shell:
@@ -240,6 +241,14 @@ rule translate:
          "tmp/{sample}.all_20kbflanking.faa"
      shell:  
          "script/translate.py {input} {output}"
+#Extract headers from all_20kbflanking.faa#
+
+              
+              
+              
+              
+              
+              
 #----------------------------------Filt#
 #Remove * in stop codon, otherwise interproscan will not work#
 rule remove_stop_codon:
