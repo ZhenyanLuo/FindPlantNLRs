@@ -4,6 +4,7 @@ conda install -y samtools
 conda install -c bioconda -y blast
 conda install -c bioconda -y pfam_scan
 conda install -c bioconda -y augustus
+conda install -c bioconda -y meme
 #download interoproscan#
 wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.48-83.0/interproscan-5.48-83.0-64-bit.tar.gz
 gunzip interproscan-5.48-83.0-64-bit.tar.gz
