@@ -67,7 +67,7 @@ rule step6:
      output:
          "tmp/{sample}.tblastnout.bed"
      shell:
-         """cat {input} | awk "{{print $1"\\t"$2"\\t"$9"\\t"$10}}" > {output}"""
+         """cat {input} | awk "{{print $2"\\t"$9"\\t"$10}}" > {output}"""
 #Indexing reference sequence#
 rule step7:
      input:
