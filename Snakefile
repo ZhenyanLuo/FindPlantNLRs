@@ -274,13 +274,17 @@ rule braker:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("script/braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}")  
 #Run augustus#
+#Change path#
 rule augustus:
-     input:
-          
      output:
-
-     shell:
-          "/usr/local/scripts/augustus/scripts/gtf2gff.pl </braker/augustus.hints.gtf --printExon --out=/braker/augustus.gff3 --gff3"
+          hints="braker/augustus.hints.gtf",
+          gff3="braker/augustus.gff3",
+          hints_rename="results/{sample}_augustus.gtf",
+          gff3_rename="results/{sample}_augustus.gff3"
+     run:
+          shell("/usr/local/scripts/augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
+          shell("mv {output.hints} {output.hints_rename}")
+          shell("mv {output.gff3} {output.gff3_rename}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
