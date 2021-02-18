@@ -222,7 +222,7 @@ rule convert_format:
      output:
          "tmp/{sample}.NBARC.20kbflanking_upper.fa"
      shell:
-         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"   
+         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"
 ####Combine with NLR_annotator output, and remove duplicated sequences#
 rule combine:
      input:
@@ -241,15 +241,7 @@ rule translate:
          "tmp/{sample}.all_20kbflanking.faa"
      shell:  
          "script/translate.py {input} {output}"
-#Extract headers from all_20kbflanking.faa#
-
-              
-              
-              
-              
-              
-              
-#----------------------------------Filt#
+#----------------------------------To classify the output of annotator and hmm#
 #Remove * in stop codon, otherwise interproscan will not work#
 rule remove_stop_codon:
      input:
@@ -409,8 +401,5 @@ rule K_parse_fusion:
            shell("mkdir -p {output.mkdir}")
            shell("mv {input.verbose} {output.mkdir}")
            shell("perl ~/scripts/plant_rgenes/processing_scripts/K-parse_Pfam_domains_NLR-fusions-v2.4.1.pl --indir {output.mkdir} --evalue 0.001 -o {output.mkdir} -d {input.db}")
-#Run the filt script#
-rule filt_script:
-      input:
-           
+
 
