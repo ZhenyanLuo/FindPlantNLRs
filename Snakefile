@@ -10,6 +10,7 @@ if not os.path.exists(path):
 result = 'result' 
 if not os.path.exists(result):
        os.mkdir(result)
+#Remember to correct this since this should be the final output#
 rule all:
      input:
        expand('genome/{sample}.fa', sample=SAMPLES)
@@ -76,6 +77,15 @@ rule bed_to_fasta:
          "tmp/{sample}.NLRparser.20kbflanking.fa"  
      shell:
          "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
+#Use blast to look for motifs#
+
+
+
+
+
+
+
+
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule convert_format:
      input:
