@@ -282,31 +282,31 @@ rule convert_20kbflankingbedfile_fasta:
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule convert_format:
      input:
-         "tmp/{sample}.NLRparser.20kbflanking.fa",
+         "tmp/{sample}.all_20kbflanking_merged.fasta",
      output:
-         "tmp/{sample}.NLRparser.20kbflanking_upper.fa"
+         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
      shell:
          "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"   
 #Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
 rule translate:
      input:
-         "tmp/{sample}.all_20kbflanking.fa"
+         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
      output: 
-         "tmp/{sample}.all_20kbflanking.faa"
+         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
      shell:  
          "script/translate.py {input} {output}"
 #----------------------------------To classify the output of annotator and hmm#
 #Remove * in stop codon, otherwise interproscan will not work#
 rule remove_stop_codon:
      input:
-         "tmp/{sample}.all_20kbflanking.faa"
+         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
      shell:
          "sed -i 's/*//g' {input}"
 #Run Interproscan, database options: Pfam, coils, gene3D #
 rule Interproscan:
      input:
-         "tmp/{sample}.all_20kbflanking.faa"
+         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
      output:
          "tmp/{sample}.tsv"
      shell:
@@ -318,7 +318,7 @@ rule Interproscan:
 #This step is modified from Peri's script: braker_nlr.pbs#
 rule braker:
      input:
-         raw="tmp/{sample}.all_20kbflanking.faa",
+         raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
          genome="genome/{sample}.fa",
          ref="genome/RefPlantNLR_aa.fa"
      output:
