@@ -23,17 +23,18 @@ rule chop_sequence:
      output:
          "tmp/{sample}.choppedseq.fa"
      shell: 
-         "java -jar ~/NLR-parser/scripts/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000" 
+         "java -jar ~/NLR-Annotator/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000" 
 #Searching the chopped subsequences for pre-determined NLR-associated motifs#
+#wget https://github.com/steuernb/NLR-Annotator/archive/nlr_parser3.zip to have three neccessary java scripts first#
 rule search_NLR_motifs:
      input:
          "tmp/{sample}.choppedseq.fa"
      output:
          "tmp/{sample}.NLRparser.xml"
      shell:
-         "java -jar ~/NLR-parser/scripts/NLR-Parser.jar -t 10 \
+         "java -jar ~/NLR-Annotator/NLR-Parser.jar -t 10 \
         -y ~/anaconda3/envs/NLR_Annotator/bin/meme_4.9.1/bin/mast \
-        -x ~/NLR-parser/scripts/meme.xml -i {input} \
+        -x ~/NLR-Annotator/meme.xml -i {input} \
         -c {output}"
 #Generate the GFF format of NLR loci for the searched motifs#
 rule NLR_annotator:
