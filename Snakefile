@@ -14,7 +14,8 @@ if not os.path.exists(result):
 rule all:
      input:
        expand('genome/{sample}.fa', sample=SAMPLES)
-#---------------Start from NLR_annotator-------------------------------------
+#----------------------------------------------------------Start from NLR_annotator---------------------------------------------------------------------------------
+#-----------------------------------------------------------------part 1--------------------------------------------------------------------------------------------
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
      input: 
@@ -77,23 +78,45 @@ rule bed_to_fasta:
          "tmp/{sample}.NLRparser.20kbflanking.fa"  
      shell:
          "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
-#Use blast to look for motifs#
-
-
-
-
-
-
-
-
-#Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
-rule convert_format:
+#-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
+#-----------------------------------------------------------------part 2--------------------------------------------------------------------------------------------
+#Make a genome database for detecting nucleotide or protein query sequence#
+rule build_blast_database:
      input:
-         "tmp/{sample}.NLRparser.20kbflanking.fa",
+         fa="genome/{sample}.fa"
      output:
-         "tmp/{sample}.NLRparser.20kbflanking_upper.fa"
+         "tmp/{sample}.genome_nucl_database"
      shell:
-         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"         
+         "makeblastdb -in {input.fa} -dbtype nucl -parse_seqids \
+        -out {output}"
+#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn#
+#remember to form a folder which include blastprotein#
+rule tblastn:
+     input:
+         blastprotein="blastprotein/blastprotein",
+         genomebase="tmp/{sample}.genome_nucl_database"
+     output:
+         "tmp/{sample}.tblastnout.outfmt6"
+     shell:
+         "tblastn -query {input.blastprotein} -db {input.genomebase} -evalue 0.001 \
+         -outfmt 6 > {output}"
+#Convert tblastn file into bed, get coloumn 1 2 9 10#
+rule tblastn_to_bed:
+     input:
+         "tmp/{sample}.tblastnout.outfmt6"
+     output:
+         "tmp/{sample}.tblastnout.bed"
+     shell:
+         """cat {input} | awk "{{print $1"\\t"$2"\\t"$9"\\t"$10}}" > {output}"""
+#Generate 20kb flanking bed file for blast 
+rule blast_20kb:
+      input:
+         bed="tmp/{sample}.tblastnout.bed",
+         genomefile="genome/{sample}.genomefile"
+     output:
+         "tmp/{sample}.blast.20kbflanking.bed"
+     shell:
+         """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""      
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream##############################################################
 #rule predict_by_braker:
 #    input:
@@ -108,6 +131,7 @@ rule convert_format:
 #
 #Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
 #Use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
+#-----------------------------------------------------------------part 3--------------------------------------------------------------------------------------------
 #Peri has already prepared hmm profiles which are named as EG_nonTIRhmm and EG_TIRhmm respectively. 
 rule find_TIR:
      input:
@@ -143,7 +167,6 @@ rule bedtools:
      run:
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output.TIR_fasta}")
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output.nonTIR_fasta}")
-
 #Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary (why?#
 rule awk:
      input:
@@ -219,31 +242,51 @@ rule generate_20kb_flanking_bed_for_NBARC:
      shell:
         """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
 #Convert 20kb flanking bed into fasta file#
-rule bed_to_fasta_2:
+#rule bed_to_fasta_2:
+#     input:
+#         genome="genome/{sample}.fa",
+#         flankingbed="tmp/{sample}.NBARC.20kbflanking.bed"
+#     output:
+#         "tmp/{sample}.NBARC.20kbflanking.fa"
+#     shell:
+#         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
+#
+#---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
+#-----------------------------------------------------------------part 4--------------------------------------------------------------------------------------------
+rule cat_all_20kbflanking:
+     input:
+         gff_annotator="tmp/{sample}.NLRparser.20kbflanking.fa",
+         gff_hmm="tmp/{sample}.NBARC.20kbflanking.bed",
+         gff_blast="tmp/{sample}.blast.20kbflanking.bed
+     output:
+         "tmp/{sample}.all_20kbflanking.bed"
+     shell:
+         "cat {input.gff_annotator} {input.gff_hmm} {input.gff_blast} > {output}"
+#Merge the bed file#
+rule merge_all_20kbflanking:
+     input:
+         "tmp/{sample}.all_20kbflanking.bed"
+     output:
+         "tmp/{sample}.all_20kbflanking_merged.bed"
+     shell:
+         "cat {input} | bedtools sort -i - | bedtools merge -d 100 -i - > {output}"
+#Convert bedfile into fasta#
+rule convert_20kbflankingbedfile_fasta:
      input:
          genome="genome/{sample}.fa",
-         flankingbed="tmp/{sample}.NBARC.20kbflanking.bed"
+         bed="tmp/{sample}.all_20kbflanking_merged.bed"
      output:
-         "tmp/{sample}.NBARC.20kbflanking.fa"
+          "tmp/{sample}.all_20kbflanking_merged.fasta"
      shell:
-         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
+          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
-rule convert_format_2:
+rule convert_format:
      input:
-         "tmp/{sample}.NBARC.20kbflanking.fa",
+         "tmp/{sample}.NLRparser.20kbflanking.fa",
      output:
-         "tmp/{sample}.NBARC.20kbflanking_upper.fa"
+         "tmp/{sample}.NLRparser.20kbflanking_upper.fa"
      shell:
-         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"
-####Combine with NLR_annotator output, and remove duplicated sequences#
-rule combine:
-     input:
-         fasta_annotator="tmp/{sample}.NLRparser.20kbflanking_upper.fa",
-         fasta_hmm="tmp/{sample}.NBARC.20kbflanking_upper.fa"
-     output:
-         "tmp/{sample}.all_20kbflanking.fa"
-     shell:
-         "cat {input.fasta_annotator} {input.fasta_hmm} > {output}"
+         "cat {input} | awk '/^>/ {{print($0)}; /^[^>]/ {print(toupper($0))}}' > {output}"   
 #Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
 rule translate:
