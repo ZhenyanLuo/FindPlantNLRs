@@ -121,24 +121,24 @@ rule headers_to_bed_NLRparser:
 #-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
 #-----------------------------------------------------------------part 2--------------------------------------------------------------------------------------------
 #Make a genome database for detecting nucleotide or protein query sequence#
+#Build blastdb#
 rule build_blast_database:
      input:
          "genome/{sample}.fa"
      output:
-         "tmp/{sample}.genome_nucl_database"
-     shell:
-         "makeblastdb -in {input} -dbtype nucl -parse_seqids -out {output}"
-#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn#
-#remember to form a folder which include blastprotein#
-rule tblastn:
+         "tmp/{sample}.database"
+     run:
+        shell("makeblastdb -in {input} -dbtype nucl -parse_seqids -out {output}")
+#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn# remember to form a folder which include blastprotein#
+rule run_tblastn:
      input:
-         blastprotein="blastprotein/blastprotein",
-         genomebase="tmp/{sample}.genome_nucl_database"
+         "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
      output:
          "tmp/{sample}.tblastnout.outfmt6"
+     params:
+         "tmp/{sample}.database"    
      shell:
-         "tblastn -query {input.blastprotein} -db {input.genomebase} -evalue 0.001 \
-         -outfmt 6 > {output}"
+         "tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 > {output}"
 #Convert tblastn file into bed, get coloumn 1 2 9 10#
 rule tblastn_to_bed:
      input:
