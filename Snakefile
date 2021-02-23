@@ -303,18 +303,6 @@ rule NBARC_headers_to_bed:
            "tmp/{sample}_NBARC_20kbflanking.bed"
        shell:
            "Peris_NLR/Myrtaceae_NLR_workflow/headers_to_bed.py {input.header} 20000 {input.genome} {output}"
-##To incorporate the data output from nlr-annotator. To do this we need to standardise the bed file from nlr-annotator to match column data with ${prefix_name}_NBARC_20kbflanking_sort.bed. We then combine files, sort and merge. Bedtools merge requires that you presort your data by chromosome and then by start position, as below.
-#rule gawk_nlr_bed:
-#       input:
-#gawk 'BEGIN { OFS = "\t"} ; { col5 = ($6 == "+" ? "forward" : "reverse");  print $1, $2, $3, $1, col5, $6 }' $wdir/1.data/${prefix_name}_nlr.bed > $outdir/${prefix_name}_new_nlr.bed
-#
-##Combine the output together#
-
-
-cat $outdir/${prefix_name}_NBARC_20kbflanking.bed $outdir/${prefix_name}_new_nlr.bed > $outdir/${prefix_name}_NBARC_20kb.bed
-sort -k1,1 -k2,2n $outdir/${prefix_name}_NBARC_20kb.bed  > $outdir/${prefix_name}_NBARC_20kb_sort.bed
-bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i $outdir/${prefix_name}_NBARC_20kb_sort.bed > $outdir/${prefix_name}_NBARC_20kb_merge.bed
-bedtools getfasta -s -fi $wdir/1.data/$input_fasta -bed $outdir/${prefix_name}_NBARC_20kb_merge.bed -fo $outdir/${prefix_name}_NBARC_20kb.fasta
 
 #Convert 20kb flanking bed into fasta file#
 #rule bed_to_fasta_2:
@@ -328,23 +316,26 @@ bedtools getfasta -s -fi $wdir/1.data/$input_fasta -bed $outdir/${prefix_name}_N
 #
 #---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
 #-----------------------------------------------------------------part 4--------------------------------------------------------------------------------------------
-rule cat_all_20kbflanking:
-     input:
-         gff_annotator="tmp/{sample}.NLRparser.20kbflanking.fa",
-         gff_hmm="tmp/{sample}.NBARC.20kbflanking.bed",
-         gff_blast="tmp/{sample}.blast.20kbflanking.bed
-     output:
-         "tmp/{sample}.all_20kbflanking.bed"
-     shell:
-         "cat {input.gff_annotator} {input.gff_hmm} {input.gff_blast} > {output}"
-#Merge the bed file#
+##Combine the output together#
+#Include blast file after getting the query file#
+rule combine_all_bed:
+         input:
+             hmm="tmp/{sample}_NBARC_20kbflanking.bed",
+             annotator="tmp/{sample}_NLRparser_20kbflanking.bed"
+         output:
+             "tmp/{sample}_all20kbflanking.bed"
+         shell:
+             "cat {input.hmm} {input.annotator}|sort -k1,1 -k2,2n >{output}"
+#Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
-         "tmp/{sample}.all_20kbflanking.bed"
+         "tmp/{sample}_all20kbflanking.bed"
      output:
          "tmp/{sample}.all_20kbflanking_merged.bed"
      shell:
-         "cat {input} | bedtools sort -i - | bedtools merge -d 100 -i - > {output}"
+         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} > {output}"        
+              
+              
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
