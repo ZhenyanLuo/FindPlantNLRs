@@ -45,3 +45,6 @@ export PYTHON3_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
 export CDBTOOLS_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
 export AUGUSTUS_SCRIPTS_PATH=/home/zhenyan/NLR_project/Augustus/scripts/
 export ALIGNMENT_TOOL_PATH=/home/zhenyan/NLR_project/gth-1.7.3-Linux_x86_64-64bit/bin/
+#--epmpde and --prg two options cannot be used at the same time, prothint.py from genemark may be neccessary#
+git clone https://github.com/gatech-genemark/ProtHint.git
+export PROTHINT_PATH=/home/zhenyan/NLR_project/ProtHint/bin/
