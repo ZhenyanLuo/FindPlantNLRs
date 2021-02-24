@@ -64,58 +64,15 @@ rule convert_NLRpaser:
           "tmp/{sample}.NLRparser.bed"
       shell:
           """awk -v OFS='\\t' '{{if ($7 == "+") {{print $1, $4, $5, $1, "forward", $7}} else if ($7 == "-") print $1, $4, $5, $1, "reverse", $7}}' {input} >{output}"""
-rule bed_into_fasta_NLRparser:
+#Convert to 20kbflanking bed file with bedtools#
+rule NLRpaser_20kbflanking:
        input:
           bed="tmp/{sample}.NLRparser.bed",
-          genome="genome/{sample}.fa"
+          genomefile="genome/{sample}.genomefile"
        output:
-          "tmp/{sample}_NLRparser_nt.fasta"
+          "tmp/{sample}_NLRparser.20kbflanking.bed"
        shell:
-          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}"
-##Translate Nucleotide NBARC sequences - 6-frame translations plus longest ORF frame output to fasta for downstream analysis, including extracting extended regions around NBARC domains from original genome and incorporating NLR-annotator defined loci.
-rule translate_nt_into_aa_NLRparser:
-       input:
-           "tmp/{sample}_NLRparser_nt.fasta"
-       output:
-           "tmp/{sample}_NLRparser_aa.fasta"
-       shell:
-           "Peris_NLR/Myrtaceae_NLR_workflow/translate.py {input} {output}"
-##Extract headers from NBARC_aa.fasta
-rule extract_header_NLRparser:
-       input:
-           "tmp/{sample}_NLRparser_aa.fasta"
-       output:
-           "tmp/{sample}_NLRparser_headers.txt"
-       shell:
-           "grep '^>' {input} > {output}"
-##Use the headers from the amino acid NBARC fasta to make an extended bedfile that incorporates +/- (20,000 nt) up and downstream of NBARC with python script so that the extended nucleotide fasta sequences can be extracted from original genome file. This can be used to identify other NLR type motifs such as TIR domains,LRR etc.
-rule headers_to_bed_NLRparser:
-       input:
-           header="tmp/{sample}_NLRparser_headers.txt",
-           genome="genome/{sample}.fa"
-       output:
-           "tmp/{sample}_NLRparser_20kbflanking.bed"
-       shell:
-           "Peris_NLR/Myrtaceae_NLR_workflow/headers_to_bed.py {input.header} 20000 {input.genome} {output}"
-#Generate 20kb flanking BED file for NLR-parser file#
-#Replace by Peri's method since this way doesn't remind details of strand direction#
-#rule generate_20kb_flanking_bed_for_NLR_parser:
-#     input:
-#         gff="tmp/{sample}.NLRparser.gff",
-#         genomefile="genome/{sample}.genomefile"
-#     output:
-#         "tmp/{sample}.NLRparser.20kbflanking.bed"
-#     shell:
-#        """ bedtools slop -b 20000 -s -i {input.gff} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""
-#Convert the merged bed file into fasta format#
-#rule bed_to_fasta:
-#     input:
-#         genome="genome/{sample}.fa",
-#         flankingbed="tmp/{sample}.NLRparser.20kbflanking.bed"
-#     output:
-#         "tmp/{sample}.NLRparser.20kbflanking.fa"
-#     shell:
-#         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
+          "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
 #Part 1 already tested and passed#              
               
 #-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
@@ -260,68 +217,24 @@ rule make_bed_hmmout:
      output:
          "tmp/{sample}_NBARC.bed"
      shell:
-         "awk -f Peris_NLR/Myrtaceae_NLR_workflow/make_bed_hmmOut.awk {input.NBARC} > {output}"
-#Extend 20kb upstream and downstream##Remember to double check whether bed file can be used to generate 20kb flanking bed
-#rule generate_20kb_flanking_bed_for_NBARC:
-#    input:
-#        bed="tmp/{sample}_NBARC.bed",
-#         genomefile="genome/{sample}.genomefile"
-#     output:
-#         "tmp/{sample}.NBARC.20kbflanking.bed"
-#     shell:
-#        """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""             
-rule bed_into_fasta:
+         "awk -f Peris_NLR/Myrtaceae_NLR_workflow/make_bed_hmmOut.awk {input.NBARC} > {output}"     
+#Get 20kb upstream and downstream# 
+rule NBARC_20flanking:
        input:
           bed="tmp/{sample}_NBARC.bed",
-          genome="genome/{sample}.fa"
+          genomefile="genome/{sample}.genomefile"
        output:
-          "tmp/{sample}_NBARC_nt.fasta"
+          "tmp/{sample}_NBARC.20kbflanking.bed"
        shell:
-          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}"
-##Translate Nucleotide NBARC sequences - 6-frame translations plus longest ORF frame output to fasta for downstream analysis, including extracting extended regions around NBARC domains from original genome and incorporating NLR-annotator defined loci.
-rule NBARC_translate_nt_into_aa:
-       input:
-           "tmp/{sample}_NBARC_nt.fasta"
-       output:
-           "tmp/{sample}_NBARC_aa.fasta"
-       shell:
-           "Peris_NLR/Myrtaceae_NLR_workflow/translate.py {input} {output}"
-##Extract headers from NBARC_aa.fasta
-rule NBARC_extract_header:
-       input:
-           "tmp/{sample}_NBARC_aa.fasta"
-       output:
-           "tmp/{sample}_NBARC_headers.txt"
-       shell:
-           "grep '^>' {input} > {output}"
-##Use the headers from the amino acid NBARC fasta to make an extended bedfile that incorporates +/- (20,000 nt) up and downstream of NBARC with python script so that the extended nucleotide fasta sequences can be extracted from original genome file. This can be used to identify other NLR type motifs such as TIR domains,LRR etc.
-rule NBARC_headers_to_bed:
-       input:
-           header="tmp/{sample}_NBARC_headers.txt",
-           genome="genome/{sample}.fa"
-       output:
-           "tmp/{sample}_NBARC_20kbflanking.bed"
-       shell:
-           "Peris_NLR/Myrtaceae_NLR_workflow/headers_to_bed.py {input.header} 20000 {input.genome} {output}"
-
-#Convert 20kb flanking bed into fasta file#
-#rule bed_to_fasta_2:
-#     input:
-#         genome="genome/{sample}.fa",
-#         flankingbed="tmp/{sample}.NBARC.20kbflanking.bed"
-#     output:
-#         "tmp/{sample}.NBARC.20kbflanking.fa"
-#     shell:
-#         "bedtools getfasta -fi {input.genome} -bed {input.flankingbed} > {output}"
-#
+          "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
 #---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
 #-----------------------------------------------------------------part 4--------------------------------------------------------------------------------------------
 ##Combine the output together#
 #Include blast file after getting the query file#
 rule combine_all_bed:
          input:
-             hmm="tmp/{sample}_NBARC_20kbflanking.bed",
-             annotator="tmp/{sample}_NLRparser_20kbflanking.bed"
+             hmm="tmp/{sample}_NBARC.20kbflanking.bed",
+             annotator="tmp/{sample}_NLRparser.20kbflanking.bed"
          output:
              "tmp/{sample}_all20kbflanking.bed"
          shell:
