@@ -1,0 +1,39 @@
+#References of braker and ausgustus
+#Hoff, K.J., Lomsadze, A., Borodovsky, M. and Stanke, M., 2019. Whole-genome annotation with BRAKER. In Gene prediction (pp. 65-95). Humana, New York, NY.
+
+
+#Braker is for gene prediction, to install braker, first we can run:
+#This will install some packages required by braker, but not all
+conda install -c bioconda -y braker2
+#Install some packages which are missed in the previous step
+
+
+#Download braker from their page in the NLR project folder#
+git clone https://github.com/Gaius-Augustus/BRAKER.git
+cd BRAKER/scripts/
+chmod a+x *.pl
+#./braker.pl to check what you miss or directly
+cpan File::Spec::Functions
+cpan Hash::Merge
+#If List::Util cannot be installed, use "conda install -c bioconda -y perl-list-util" instead#
+cpan List::Util
+cpan MCE::Mutex
+cpan Module::Load::Conditional
+cpan Parallel::ForkManager
+cpan POSIX
+cpan Scalar::Util::Numeric
+cpan YAML
+cpan Math::Utils
+#Download genemark from http://exon.gatech.edu/GeneMark/license_download.cgi , select the second one (GeneMark-ES/ET/EP ver 4.62_lic)#
+gunzip *.gz
+tar -xvf *.tar
+#then move gm_key into the folder of gmes_linux_64#
+#Run check_install.bash to see whether genemark install correctly#
+bash check_install.bash
+#As mentioned in their original home page, change the path when use anaconda environment 
+perl change_path_in_perl_scripts.pl "/usr/bin/env perl"
+#Now move to augustus#
+cp -r /usr/bin/Augustus/config/ /home/zhenyan/
+export AUGUSTUS_CONFIG_PATH=/home/zhenyan/
+export AUGUSTUS_BIN_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
+export AUGUSTUS_SCRIPTS_PATH=/home/zhenyan/NLR_project/Augustus/scripts/
