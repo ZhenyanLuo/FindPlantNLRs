@@ -261,7 +261,7 @@ rule convert_20kbflankingbedfile_fasta:
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule convert_format:
      input:
-         "tmp/{sample}.all_20kbflanking_merged.fasta",
+         "tmp/{sample}.all_20kbflanking_merged.fasta"
      output:
          "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
      shell:
@@ -298,21 +298,30 @@ rule Interproscan:
 rule braker:
      input:
          raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-         genome="genome/{sample}.fa",
-         ref="genome/RefPlantNLR_aa.fa"
+         all_20flanking="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+         ref="genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
      output:
-         removed="tmp/{sample}_all_20kbflanking_removed.fasta"
+         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
+         hints_gtf="BRAKER/scripts/braker/{sample)_augustus.hints.gtf",
+         gff3="BRAKER/scripts/braker/{sample}_augustus.gff3",
+         hints_aa="BRAKER/scripts/braker/{sample}_augustus.hints.aa"
+     params:
+         "{sample}"
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-         shell("script/braker.pl --cores=6 --genome={input.genome} --prot_seq={input.ref} --ALIGNMENT_TOOL_PATH=/usr/local/genemark-es/4.59/ProtHint/bin/ --prg=ph --epmode --species={sample}")  
-#Run augustus#
+         shell("./BRAKER/scripts/braker.pl --cores=15 --genome={input.all_20flanking} --prot_seq={input.ref} --epmode --species={params} --gff3")
+         shell("/usr/local/scripts/augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
+         shell("mv BRAKER/scripts/braker/augustus.hints.gtf {output.hints_gtf}")
+         shell("mv BRAKER/scripts/braker/augustus.gff3 {output.gff3}")
+         shell("mv BRAKER/scripts/braker/augustus.hints.aa {output.hints_aa}")
+       #Run augustus#
 #Change path#
 rule augustus:
      output:
-          hints="braker/augustus.hints.gtf",
-          gff3="braker/augustus.gff3",
-          hints_rename="results/{sample}_augustus.gtf",
-          gff3_rename="results/{sample}_augustus.gff3"
+          hints="BRAKER/scripts/braker/augustus.hints.gtf",
+          gff3="BRAKER/scripts/braker/augustus.gff3",
+          hints_rename="BRAKER/scripts/braker/results/{sample}_augustus.gtf",
+          gff3_rename="BRAKER/scripts/braker/results/{sample}_augustus.gff3"
      run:
           shell("/usr/local/scripts/augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
           shell("mv {output.hints} {output.hints_rename}")
@@ -320,7 +329,7 @@ rule augustus:
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "tmp/augustus.hints.aa"      
+          "BRAKER/{sample}_augustus.hints.aa"      
      output:
           "tmp/{sample}_augustus_aa.fasta"
      shell:
