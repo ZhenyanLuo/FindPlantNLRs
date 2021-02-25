@@ -72,7 +72,7 @@ rule NLRpaser_20kbflanking:
        output:
           "tmp/{sample}_NLRparser.20kbflanking.bed"
        shell:
-          "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
+          "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - |bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, > {output}"
 #Part 1 already tested and passed#              
               
 #-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
@@ -91,32 +91,19 @@ rule run_tblastn:
      input:
          "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
      output:
-         outfmt6="tmp/{sample}.tblastnout_minus.outfmt6",
-         bed="tmp/{sample}.tblastnout_minus.bed"
+         outfmt6="tmp/{sample}.tblastnout.outfmt6"
      params:
          "tmp/{sample}.database"    
      run:
-         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -strand minus > {output.outfmt6}")
-         shell("cat {output.outfmt6}|awk -v OFS='\\t' '{{print $2, $9, $10, $1, "reverse", "-"}}' > {output.bed}")
-rule run_tblastn:
-     input:
-         "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
-     output:
-         outfmt6="tmp/{sample}.tblastnout_plus.outfmt6",
-         bed="tmp/{sample}.tblastnout_plus.bed"
-     params:
-         "tmp/{sample}.database"
-     run:
-         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -strand plus > {output.outfmt6}")
-         shell("cat {output.outfmt6}|awk -v OFS='\\t' '{{print $2, $9, $10, $1, "forward", "+"}}' > {output.bed}")
-#Convert tblastn file into bed, get coloumn 1 2 9 10#
+         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -o {output.outfmt6}")
+#Convert tblastn file into bed, and add two coloums for strand information#
 rule tblastn_to_bed:
      input:
          "tmp/{sample}.tblastnout.outfmt6"
      output:
          "tmp/{sample}.tblastnout.bed"
      shell:
-         """cat {input} | awk "{{print $1"\\t"$2"\\t"$9"\\t"$10}}" > {output}"""
+         """awk -v OFS='\\t' '{{if ($10 - $9 > 0) {{print $2, $9, $10, $1, "forward", "+"}} else if ($10 - $9 < 0) print $2, $10, $9, $1, "reverse", "-"}}' {input} > {output}"""
 ##Generate 20kb flanking bed file for blast 
 rule blast_20kb:
       input:
@@ -125,7 +112,7 @@ rule blast_20kb:
      output:
          "tmp/{sample}.blast.20kbflanking.bed"
      shell:
-         """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 100 -i - >  {output}"""      
+         """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct,  >  {output}"""      
 #Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream##############################################################
 #rule predict_by_braker:
 #    input:
@@ -247,11 +234,12 @@ rule NBARC_20flanking:
 rule combine_all_bed:
          input:
              hmm="tmp/{sample}_NBARC.20kbflanking.bed",
-             annotator="tmp/{sample}_NLRparser.20kbflanking.bed"
+             annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
+             blast="tmp/{sample}.blast.20kbflanking.bed"
          output:
              "tmp/{sample}_all20kbflanking.bed"
          shell:
-             "cat {input.hmm} {input.annotator}|sort -k1,1 -k2,2n >{output}"
+             "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
 #Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
