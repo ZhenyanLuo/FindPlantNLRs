@@ -84,18 +84,31 @@ rule build_blast_database:
          "genome/{sample}.fa"
      output:
          "tmp/{sample}.database"
-     run:
-        shell("makeblastdb -in {input} -dbtype nucl -parse_seqids -out {output}")
+     shell:
+         "makeblastdb -in {input} -dbtype nucl -parse_seqids -out {output}"
 #Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn# remember to form a folder which include blastprotein#
 rule run_tblastn:
      input:
          "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
      output:
-         "tmp/{sample}.tblastnout.outfmt6"
+         outfmt6="tmp/{sample}.tblastnout_minus.outfmt6",
+         bed="tmp/{sample}.tblastnout_minus.bed"
      params:
          "tmp/{sample}.database"    
-     shell:
-         "tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 > {output}"
+     run:
+         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -strand minus > {output.outfmt6}")
+         shell("cat {output.outfmt6}|awk -v OFS='\\t' '{{print $2, $9, $10, $1, "reverse", "-"}}' > {output.bed}")
+rule run_tblastn:
+     input:
+         "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
+     output:
+         outfmt6="tmp/{sample}.tblastnout_plus.outfmt6",
+         bed="tmp/{sample}.tblastnout_plus.bed"
+     params:
+         "tmp/{sample}.database"
+     run:
+         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -strand plus > {output.outfmt6}")
+         shell("cat {output.outfmt6}|awk -v OFS='\\t' '{{print $2, $9, $10, $1, "forward", "+"}}' > {output.bed}")
 #Convert tblastn file into bed, get coloumn 1 2 9 10#
 rule tblastn_to_bed:
      input:
@@ -246,9 +259,7 @@ rule merge_all_20kbflanking:
      output:
          "tmp/{sample}.all_20kbflanking_merged.bed"
      shell:
-         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} > {output}"        
-              
-              
+         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} > {output}"               
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
@@ -299,7 +310,7 @@ rule braker:
      input:
          raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
          all_20flanking="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-         ref="genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
+         ref="genome/prothint_sequences.fa"
      output:
          removed="tmp/{sample}_all_20kbflanking_removed.fasta",
          hints_gtf="BRAKER/scripts/braker/{sample)_augustus.hints.gtf",
@@ -310,28 +321,15 @@ rule braker:
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("./BRAKER/scripts/braker.pl --cores=15 --genome={input.all_20flanking} --prot_seq={input.ref} --epmode --species={params} --gff3")
-         shell("/usr/local/scripts/augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
+         shell("./Augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
          shell("mv BRAKER/scripts/braker/augustus.hints.gtf {output.hints_gtf}")
-         shell("mv BRAKER/scripts/braker/augustus.gff3 {output.gff3}")
          shell("mv BRAKER/scripts/braker/augustus.hints.aa {output.hints_aa}")
-       #Run augustus#
-#Change path#
-rule augustus:
-     output:
-          hints="BRAKER/scripts/braker/augustus.hints.gtf",
-          gff3="BRAKER/scripts/braker/augustus.gff3",
-          hints_rename="BRAKER/scripts/braker/results/{sample}_augustus.gtf",
-          gff3_rename="BRAKER/scripts/braker/results/{sample}_augustus.gff3"
-     run:
-          shell("/usr/local/scripts/augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
-          shell("mv {output.hints} {output.hints_rename}")
-          shell("mv {output.gff3} {output.gff3_rename}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "BRAKER/{sample}_augustus.hints.aa"      
+          "BRAKER/scripts/braker/{sample}_augustus.hints.aa"      
      output:
-          "tmp/{sample}_augustus_aa.fasta"
+          "result/{sample}_augustus_aa.fasta"
      shell:
           "sed s/\*//g {input} > {output}"
 #Filt the output based on domain identified#---------------------------------------Peris' s version-----------------------------------------------------------------
@@ -343,7 +341,7 @@ rule braker_step2:
 rule combine_interproscan_braker_NBARC:
      input:
           tsv="tmp/{sample}.tsv",
-          gff3="tmp/augustus_out.gff3"
+          gff3="tmp/{sample}_augustus_out.gff3"
      output:
           "result/{sample}_NBARC.gff3"     
      shell:
@@ -352,7 +350,7 @@ rule combine_interproscan_braker_NBARC:
 rule combine_interproscan_braker_TIRNB:
      input:
           tsv="tmp/{sample}.tsv",
-          gff3="tmp/augustus_out.gff3"
+          gff3="tmp/{sample}_augustus_out.gff3"
      output:
           "result/{sample}_TIRNB.gff3"     
      shell:
@@ -361,7 +359,7 @@ rule combine_interproscan_braker_TIRNB:
 rule combine_interproscan_braker_NBLRR:
      input:
           tsv="tmp/{sample}.tsv",
-          gff3="tmp/augustus_out.gff3"
+          gff3="tmp/{sample}_augustus_out.gff3"
      output:
           "result/{sample}_NBLRR.gff3"     
      shell:
@@ -370,7 +368,7 @@ rule combine_interproscan_braker_NBLRR:
 rule combine_interproscan_braker_TIR:
      input:
           tsv="tmp/{sample}.tsv",
-          gff3="tmp/augustus_out.gff3"
+          gff3="tmp/{sample}_augustus_out.gff3"
      output:
           "result/{sample}_TIR.gff3"     
      shell:
@@ -381,7 +379,7 @@ rule combine_interproscan_braker_TIR:
 rule hmmsearch:
      input:
            hmm="tmp/{sample}.hmm",
-           hint="braker/augustus.hints.aa"
+           hint="BRAKER/scripts/braker/{sample}_augustus.hints.aa" 
      output:
            noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
            tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
