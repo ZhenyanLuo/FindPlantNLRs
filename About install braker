@@ -48,3 +48,5 @@ export ALIGNMENT_TOOL_PATH=/home/zhenyan/NLR_project/gth-1.7.3-Linux_x86_64-64bi
 #--epmpde and --prg two options cannot be used at the same time, prothint.py from genemark may be neccessary#
 git clone https://github.com/gatech-genemark/ProtHint.git
 export PROTHINT_PATH=/home/zhenyan/NLR_project/ProtHint/bin/
+#Now it should work#
+./BRAKER/scripts/braker.pl --cores=15 --genome=/home/zhenyan/NLR_project/genome/E_globulus.fa --prot_seq=/home/zhenyan/NLR_project/genome/prothint_sequences.fa --prg=spaln --epmode --species=E_grandis --gff3
