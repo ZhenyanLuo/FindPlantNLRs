@@ -35,10 +35,8 @@ perl change_path_in_perl_scripts.pl "/usr/bin/env perl"
 #Now move to augustus#
 cp -r /usr/bin/Augustus/config/ /home/zhenyan/
 #Set path for everything#
-export GENEMARK_PATH=~/NLR_project/gmes_linux_64/gmes_petap
-export AUGUSTUS_CONFIG_PATH=/home/zhenyan/NLR_project/
+export GENEMARK_PATH=/home/zhenyan/NLR_project/gmes_linux_64/
 export AUGUSTUS_BIN_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
-export AUGUSTUS_SCRIPTS_PATH=/home/zhenyan/NLR_project/Augustus/scripts/
 export AUGUSTUS_CONFIG_PATH=/home/zhenyan/NLR_project/config/
 export DIAMOND_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
 export PYTHON3_PATH=/home/zhenyan/anaconda3/envs/snakemake/bin/
@@ -49,4 +47,4 @@ export ALIGNMENT_TOOL_PATH=/home/zhenyan/NLR_project/gth-1.7.3-Linux_x86_64-64bi
 git clone https://github.com/gatech-genemark/ProtHint.git
 export PROTHINT_PATH=/home/zhenyan/NLR_project/ProtHint/bin/
 #Now it should work#
-./braker.pl --cores=15 --genome=/home/zhenyan/NLR_project/genome/E_globulus.fa --prot_seq=/home/zhenyan/NLR_project/genome/prothint_sequences.fa --epmode --species=E_grandis_2 --gff3
+./braker.pl --cores=15 --genome=/home/zhenyan/NLR_project/genome/E_globulus.fa --prot_seq=/home/zhenyan/NLR_project/genome/prothint_sequences.fa --epmode --species=E_grandis_3 --gff3
