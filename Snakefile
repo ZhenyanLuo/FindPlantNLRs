@@ -285,10 +285,10 @@ rule remove_stop_codon:
 rule Interproscan:
      input:
          "tmp/{sample}.all_20kbflanking_merged_upper.faa"
-     output:
-         "tmp/{sample}.tsv"
+     params:
+         "tmp/"
      shell:
-          "./interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -o {output}"
+          "./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d {params}"
 #Predict genes by using braker, remove special header first##Remember to use extended one#
 #RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
 #Remember to correct the path for braker.pl#
