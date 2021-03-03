@@ -309,7 +309,7 @@ rule braker:
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("./BRAKER/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
-         shell("./Augustus/scripts/gtf2gff.pl <{output.hints} --printExon --out={output.gff3} --gff3")
+         shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
          shell("mv BRAKER/scripts/braker/augustus.hints.gtf {output.hints_gtf}")
          shell("mv BRAKER/scripts/braker/augustus.hints.aa {output.hints_aa}")
 #Remove special characters and rename the augustus output#
@@ -342,7 +342,7 @@ rule combine_interproscan_braker_TIRNB:
      output:
           "result/{sample}_TIRNB.gff3"     
      shell:
-          "run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
+          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
 #Identify NB_LRR: 
 rule combine_interproscan_braker_NBLRR:
      input:
@@ -384,11 +384,12 @@ rule grep_hmmsearch:
 #Using the sequence ID and seqtk to pull out protein sequences of NB-ARC domains
 rule seqtk:
      input:
-           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"   
+           seqID="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt",
+           hint="BRAKER/scripts/braker/{sample}_augustus.hints.aa"
      output:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      shell:   
-           "seqtk subseq ./braker/augustus.hints.aa {input} > {output}"
+           "seqtk subseq {input.hint} {input.sedID} > {output}"
 #Removing asterisk (*) from the end of each sequences
 rule sed:
      input:
@@ -409,7 +410,7 @@ rule interproscan_NBARC:
      output:
            "result/Interpro_{sample}" 
      shell:
-           "interproscan/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {output}"
+           "./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {output}"
 #Search NB-ARC domain against library of Pfam
 rule pfam_scan:
      input:
