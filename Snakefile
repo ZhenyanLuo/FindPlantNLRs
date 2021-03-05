@@ -302,20 +302,20 @@ rule braker:
      output:
          removed="tmp/{sample}_all_20kbflanking_removed.fasta",
          hints_gtf="BRAKER/scripts/braker/{sample)_augustus.hints.gtf",
-         gff3="BRAKER/scripts/braker/{sample}_augustus.gff3",
+         gff3="BRAKER/scripts/braker/{sample}_augustus_out.gff3",
          hints_aa="BRAKER/scripts/braker/{sample}_augustus.hints.aa"
      params:
          "{sample}"
      run:
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-         shell("./BRAKER/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
+         shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
          shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
-         shell("mv BRAKER/scripts/braker/augustus.hints.gtf {output.hints_gtf}")
-         shell("mv BRAKER/scripts/braker/augustus.hints.aa {output.hints_aa}")
+         shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
+         shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "BRAKER/scripts/braker/{sample}_augustus.hints.aa"      
+          "scripts/braker/{sample}_augustus.hints.aa"      
      output:
           "result/{sample}_augustus_aa.fasta"
      shell:
@@ -333,7 +333,7 @@ rule combine_interproscan_braker_NBARC:
      output:
           "result/{sample}_NBARC.gff3"     
      shell:
-          "run_NBARC.sh {input.tsv} {input.gff3} > {output}"
+          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBARC.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR_NB: 
 rule combine_interproscan_braker_TIRNB:
      input:
@@ -351,7 +351,7 @@ rule combine_interproscan_braker_NBLRR:
      output:
           "result/{sample}_NBLRR.gff3"     
      shell:
-          "run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
+          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR: 
 rule combine_interproscan_braker_TIR:
      input:
@@ -360,7 +360,7 @@ rule combine_interproscan_braker_TIR:
      output:
           "result/{sample}_TIR.gff3"     
      shell:
-          "run_TIR.sh {input.tsv} {input.gff3} > {output}"
+          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIR.sh {input.tsv} {input.gff3} > {output}"
 ###Tamene's version, original one used PF00931 and Pfam-A.hmm----------------------------------------------------------------
 #Let's start from using hmm profile built ({sample}.hmm) #
 #add augustus.hints.aa#
