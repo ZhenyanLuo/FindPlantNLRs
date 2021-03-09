@@ -78,24 +78,18 @@ rule NLRpaser_20kbflanking:
 #-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
 #-----------------------------------------------------------------part 2--------------------------------------------------------------------------------------------
 #Make a genome database for detecting nucleotide or protein query sequence#
-#Build blastdb#
-rule build_blast_database:
-     input:
-         "genome/{sample}.fa"
-     output:
-         "tmp/{sample}.database"
-     shell:
-         "makeblastdb -in {input} -dbtype nucl -parse_seqids -out {output}"
-#Dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn# remember to form a folder which include blastprotein#
+#Build blastdb and dectect whether there are genes which cannot be captured by using NLR-parser by using tblastn# remember to form a folder which include blastprotein#
 rule run_tblastn:
      input:
-         "genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
+         genome="genome/{sample}.fa",
+         ref="genome/RefPlant_235NLR_ADR1_ZAR1_protein.fa"
      output:
          outfmt6="tmp/{sample}.tblastnout.outfmt6"
      params:
-         "tmp/{sample}.database"    
+         "tmp/{sample}.database"
      run:
-         shell("tblastn -query {input} -db {params} -evalue 0.001 -outfmt 6 -o {output.outfmt6}")
+         shell("makeblastdb -in {input.genome} -dbtype nucl -parse_seqids -out {params}")
+         shell("tblastn -query {input.ref} -db {params} -evalue 0.001 -outfmt 6 -out {output.outfmt6}")
 #Convert tblastn file into bed, and add two coloums for strand information#
 rule tblastn_to_bed:
      input:
@@ -295,14 +289,14 @@ rule braker:
      params:
          "{sample}"
      run:
+         shell("rm -r scripts/braker/GeneMark-EP")
+         shell("rm -r scirpts/braker/GeneMark-ES")
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
          shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
          shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
          shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
          shell("mv scripts/braker/braker.gff3 scripts/braker/{sample}_braker.gff3")
-         shell("rm -r scripts/braker/GeneMark-EP")
-         shell("rm -r scirpts/braker/GeneMark-ES")
 #Get fasta data from the braker.gff file#
 #May use getAnnoFastaFromJoingenes.py in augustus foler instead#
 rule braker_gff_to_fasta:
@@ -312,7 +306,7 @@ rule braker_gff_to_fasta:
        params:
          "tmp/{sample}_braker"   
        shell:
-          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}     
+          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}"     
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
@@ -332,7 +326,7 @@ rule hmmsearch:
      params:
            "Pfam/PF00931.hmm"
      shell:
-           hmmsearch -o {output.noali} --tblout {out.tblout} --noali --notextw {params} {input.hint}"
+           "hmmsearch -o {output.noali} --tblout {out.tblout} --noali --notextw {params} {input.hint}"
 #Sorting out and cutting of sequence IDs of domains
 rule grep_hmmsearch:
      input:
@@ -345,7 +339,7 @@ rule grep_hmmsearch:
 rule seqtk:
      input:
            seqID="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt",
-           hint="BRAKER/scripts/braker/{sample}_augustus.hints.aa"
+           hint="tmp/{sample}_braker.aa"
      output:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      shell:   
