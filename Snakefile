@@ -312,12 +312,33 @@ rule braker:
          shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
          shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
          shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
+         shell("mv scripts/braker/braker.gff3 scripts/braker/{sample}_braker.gff3")
+         shell("rm -r scripts/braker/GeneMark-EP")
+         shell("rm -r scirpts/braker/GeneMark-ES")
+#Get fasta data from the braker.gff file#
+#May use getAnnoFastaFromJoingenes.py in augustus foler instead#
+rule braker_gff_to_fasta:
+       input:
+         genome="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+         bed="scripts/braker/{sample}_braker.gtf"
+       params:
+         "tmp/{sample}_braker"   
+       shell:
+          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}
+#rule braker_gff_to_fasta:
+#      input:
+#         genome="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+#         bed="scripts/braker/{sample}_braker.gff3"
+#      output:
+#         fasta="{sample}_braker.fasta   
+#      run:
+#         "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output.fasta}"      
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "scripts/braker/{sample}_augustus.hints.aa"      
+          "tmp/{sample}_braker.aa"      
      output:
-          "result/{sample}_augustus_aa.fasta"
+          "tmp/{sample}_braker.faa"
      shell:
           "sed s/\*//g {input} > {output}"
 #Filt the output based on domain identified#---------------------------------------Peris' s version-----------------------------------------------------------------
@@ -326,53 +347,53 @@ rule braker_step2:
 #Also look for TIR domains, Coils etc.
 #PF01582 = TIR#Combine the result of interproscan and braker together to identify NBARC#
 #Identify NB_ARC: 
-rule combine_interproscan_braker_NBARC:
-     input:
-          tsv="tmp/{sample}.tsv",
-          gff3="tmp/{sample}_augustus_out.gff3"
-     output:
-          "result/{sample}_NBARC.gff3"     
-     shell:
-          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBARC.sh {input.tsv} {input.gff3} > {output}"
+#rule combine_interproscan_braker_NBARC:
+#     input:
+#          tsv="tmp/{sample}.tsv",
+#          gff3="tmp/{sample}_augustus_out.gff3"
+#     output:
+#          "result/{sample}_NBARC.gff3"     
+#     shell:
+#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBARC.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR_NB: 
-rule combine_interproscan_braker_TIRNB:
-     input:
-          tsv="tmp/{sample}.tsv",
-          gff3="tmp/{sample}_augustus_out.gff3"
-     output:
-          "result/{sample}_TIRNB.gff3"     
-     shell:
-          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
+#rule combine_interproscan_braker_TIRNB:
+#     input:
+#          tsv="tmp/{sample}.tsv",
+#          gff3="tmp/{sample}_augustus_out.gff3"
+#     output:
+#          "result/{sample}_TIRNB.gff3"     
+#     shell:
+#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
 #Identify NB_LRR: 
-rule combine_interproscan_braker_NBLRR:
-     input:
-          tsv="tmp/{sample}.tsv",
-          gff3="tmp/{sample}_augustus_out.gff3"
-     output:
-          "result/{sample}_NBLRR.gff3"     
-     shell:
-          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
+#rule combine_interproscan_braker_NBLRR:
+#     input:
+#          tsv="tmp/{sample}.tsv",
+#          gff3="tmp/{sample}_augustus_out.gff3"
+#     output:
+#          "result/{sample}_NBLRR.gff3"     
+#     shell:
+#         "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
 #Identify TIR: 
-rule combine_interproscan_braker_TIR:
-     input:
-          tsv="tmp/{sample}.tsv",
-          gff3="tmp/{sample}_augustus_out.gff3"
-     output:
-          "result/{sample}_TIR.gff3"     
-     shell:
-          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIR.sh {input.tsv} {input.gff3} > {output}"
-###Tamene's version, original one used PF00931 and Pfam-A.hmm----------------------------------------------------------------
+#rule combine_interproscan_braker_TIR:
+#    input:
+#          tsv="tmp/{sample}.tsv",
+#          gff3="tmp/{sample}_augustus_out.gff3"
+#     output:
+#          "result/{sample}_TIR.gff3"     
+#     shell:
+#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIR.sh {input.tsv} {input.gff3} > {output}"
+###Tamene's version, use PF00931 and Pfam-A.hmm----------------------------------------------------------------
 #Let's start from using hmm profile built ({sample}.hmm) #
-#add augustus.hints.aa#
 rule hmmsearch:
      input:
-           hmm="tmp/{sample}.hmm",
-           hint="BRAKER/scripts/braker/{sample}_augustus.hints.aa" 
+           hint="tmp/{sample}_braker.aa" 
      output:
            noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
            tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
+     params:
+           "Pfam/PF00931.hmm"
      shell:
-           "hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {input.hmm} {input.hint}"
+           hmmsearch -o {output.noali} --tblout {out.tblout} --noali --notextw {params} {input.hint}"
 #Sorting out and cutting of sequence IDs of domains
 rule grep_hmmsearch:
      input:
