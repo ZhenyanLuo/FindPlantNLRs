@@ -113,18 +113,6 @@ rule blast_20kb:
          "tmp/{sample}.blast.20kbflanking.bed"
      shell:
          """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct,  >  {output}"""      
-#Gene prediction by BRAKER using extended regions around NB-ARCs by 20kb up and downsream##############################################################
-#rule predict_by_braker:
-#    input:
-#         genome="/genome/{sample}.all_20kbflanking_upper.fa",
-#         prot="tmp/prothint_sequences.fa"
-#    # output:
-#     shell:
-#         "braker.pl --genome={input.genome} \
-#        --prot_seq={input.prot} \
-#        --species={sample} --epmode --cores=15 --softmasking --prg=ph \
-#        --ALIGNMENT_TOOL_PATH=~/anaconda3/envs/braker2/bin/spaln --gff3"
-#
 #Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
 #Use nhmmer to search for conserved nucleotide binding domain shared by Apaf-1, Resistance proteins and CED4 from coiled-coil NLR and TIR NLR sequences#
 #-----------------------------------------------------------------part 3--------------------------------------------------------------------------------------------
@@ -324,15 +312,7 @@ rule braker_gff_to_fasta:
        params:
          "tmp/{sample}_braker"   
        shell:
-          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}
-#rule braker_gff_to_fasta:
-#      input:
-#         genome="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-#         bed="scripts/braker/{sample}_braker.gff3"
-#      output:
-#         fasta="{sample}_braker.fasta   
-#      run:
-#         "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output.fasta}"      
+          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}     
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
@@ -341,47 +321,6 @@ rule braker_step2:
           "tmp/{sample}_braker.faa"
      shell:
           "sed s/\*//g {input} > {output}"
-#Filt the output based on domain identified#---------------------------------------Peris' s version-----------------------------------------------------------------
-#PF00931 = NB-ARC domain, G3DSA:3.40.50.300 = P-loop containing nucleoside triphosphate hydrolase, PF08263 = LRR, PF12799 = LRR, PF13306 = LRR, PF13855 = LRR, PF13516 = LRR,
-#G3DSA:1.10.8.430 = Gene3D LRR. Also need to search for this Gene3D output in interproscan because Pfam does not recognise all LRR signals.
-#Also look for TIR domains, Coils etc.
-#PF01582 = TIR#Combine the result of interproscan and braker together to identify NBARC#
-#Identify NB_ARC: 
-#rule combine_interproscan_braker_NBARC:
-#     input:
-#          tsv="tmp/{sample}.tsv",
-#          gff3="tmp/{sample}_augustus_out.gff3"
-#     output:
-#          "result/{sample}_NBARC.gff3"     
-#     shell:
-#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBARC.sh {input.tsv} {input.gff3} > {output}"
-#Identify TIR_NB: 
-#rule combine_interproscan_braker_TIRNB:
-#     input:
-#          tsv="tmp/{sample}.tsv",
-#          gff3="tmp/{sample}_augustus_out.gff3"
-#     output:
-#          "result/{sample}_TIRNB.gff3"     
-#     shell:
-#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIRNB.sh {input.tsv} {input.gff3} > {output}"
-#Identify NB_LRR: 
-#rule combine_interproscan_braker_NBLRR:
-#     input:
-#          tsv="tmp/{sample}.tsv",
-#          gff3="tmp/{sample}_augustus_out.gff3"
-#     output:
-#          "result/{sample}_NBLRR.gff3"     
-#     shell:
-#         "bash Peris_NLR/Myrtaceae_NLR_workflow/run_NBLRR.sh {input.tsv} {input.gff3} > {output}"
-#Identify TIR: 
-#rule combine_interproscan_braker_TIR:
-#    input:
-#          tsv="tmp/{sample}.tsv",
-#          gff3="tmp/{sample}_augustus_out.gff3"
-#     output:
-#          "result/{sample}_TIR.gff3"     
-#     shell:
-#          "bash Peris_NLR/Myrtaceae_NLR_workflow/run_TIR.sh {input.tsv} {input.gff3} > {output}"
 ###Tamene's version, use PF00931 and Pfam-A.hmm----------------------------------------------------------------
 #Let's start from using hmm profile built ({sample}.hmm) #
 rule hmmsearch:
