@@ -289,24 +289,27 @@ rule braker:
      params:
          "{sample}"
      run:
-         shell("rm -r scripts/braker/GeneMark-EP")
-         shell("rm -r scirpts/braker/GeneMark-ES")
          shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
          shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
          shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
          shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
          shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
          shell("mv scripts/braker/braker.gff3 scripts/braker/{sample}_braker.gff3")
-#Get fasta data from the braker.gff file#
-#May use getAnnoFastaFromJoingenes.py in augustus foler instead#
+         shell("rm -r scripts/braker/GeneMark-EP scripts/braker/GeneMark-ES")
+#Use getAnnoFastaFromJoingenes.py in augustus to get both nucleotide and protein sequence from braker.gtf#
 rule braker_gff_to_fasta:
        input:
          genome="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-         bed="scripts/braker/{sample}_braker.gtf"
+         bed="braker/{sample}_braker.gtf"
+       output:
+         aa="tmp/{sample}_braker.aa",
+         codingseq="tmp/{sample}_braker.codingseq"
        params:
-         "tmp/{sample}_braker"   
-       shell:
-          "./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}"     
+         "tmp/tmp_braker"
+       run:
+          shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
+          shell("mv {params}.aa {output.aa}")
+          shell("mv {params}.codingseq {output.codingseq}")     
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
