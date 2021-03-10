@@ -313,7 +313,7 @@ rule braker_gff_to_fasta:
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "tmp/{sample}_braker.aa"      
+          "tmp/{sample}_braker.aa"
      output:
           "tmp/{sample}_braker.faa"
      shell:
@@ -322,14 +322,14 @@ rule braker_step2:
 #Let's start from using hmm profile built ({sample}.hmm) #
 rule hmmsearch:
      input:
-           hint="tmp/{sample}_braker.aa" 
+           "tmp/{sample}_braker.faa"
      output:
            noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
            tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
      params:
            "Pfam/PF00931.hmm"
      shell:
-           "hmmsearch -o {output.noali} --tblout {out.tblout} --noali --notextw {params} {input.hint}"
+           "hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {params} {input}"
 #Sorting out and cutting of sequence IDs of domains
 rule grep_hmmsearch:
      input:
