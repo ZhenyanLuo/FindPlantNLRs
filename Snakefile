@@ -361,13 +361,13 @@ rule interproscan_NBARC:
      params:
            "result/Interpro_{sample}"
      output:
-           gff3="result/{sample}.NB-ARC_hmmsearch_perseqhit_protein.gff3",
-           tsv="result/{sample}.NB-ARC_hmmsearch_perseqhit_protein.tsv"
+           gff3="result/{sample}.NB-ARC_hmmsearch.gff3",
+           tsv="result/{sample}.NB-ARC_hmmsearch.tsv"
      run:
            shell("mkdir -p {params}")
            shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {params}")
-           shell("mv {params}.gff3 {output.gff3}")
-           shell("mv {params}.tsv {output.tsv}")
+           shell("mv {params}/{sample}.NB-ARC_hmmsearch_perseqhit_protein.gff3 {output.gff3}")
+           shell("mv {params}/{sample}.NB-ARC_hmmsearch_perseqhit_protein.tsv {output.tsv}")
 #Search NB-ARC domain against library of Pfam
 rule pfam_scan:
      input:
