@@ -379,13 +379,15 @@ rule pfam_scan:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      output:
            Pfamscan="tmp/{sample}.protein.fa_pfamscan.txt"
+     params:
+           "Pfam"
      run:
-           shell("./Pfam/PfamScan/pfam_scan.pl -fasta {input} -dir Pfam -as -cpu 16 -outfile {output.Pfamscan}")
-#Parsing the output of PfamScan output parser using the script 
+           shell("./Pfam/PfamScan/pfam_scan.pl -fasta {input} -dir {params} -as -cpu 16 -outfile {output.Pfamscan}")
+#Parsing the output of PfamScan output parser using the script
 #K-parse_Pfam_domains_v3.1.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7
 rule K_parse:
      input:
-           "tmp/sample}.protein.fa_pfamscan.txt"   
+           "tmp/{sample}.protein.fa_pfamscan.txt"
      output:
            "tmp/{sample}.protein.fa_pfamscan_parsed.verbose"
      shell:
