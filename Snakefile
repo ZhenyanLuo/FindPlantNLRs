@@ -342,42 +342,43 @@ rule grep_hmmsearch:
 rule seqtk:
      input:
            seqID="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt",
-           hint="tmp/{sample}_braker.aa"
+           hint="tmp/{sample}_braker.faa"
      output:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      shell:   
-           "seqtk subseq {input.hint} {input.sedID} > {output}"
+           "seqtk subseq {input.hint} {input.seqID} > {output}"
 #Removing asterisk (*) from the end of each sequences
 rule sed:
      input:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"    
      shell:
            "sed -i 's/*//g' {input}"
-#Generate empty directory to store Interproscan output
-rule mkdir:
-     output:
-           "result/Interpro_{sample}"
-     shell:
-           "mkdir -p {output}"
 #Using InterProScan to detect the TIR, LRR and COIL sub-classes of NB-ARC domains
-#Remember to update the path of interproscan.sh
+#Remember to update the path of interproscan.sh if new version of interproscan is available
 rule interproscan_NBARC:
      input:
-           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"    
+           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
+     params:
+           "result/Interpro_{sample}"
      output:
-           "result/Interpro_{sample}" 
-     shell:
-           "./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {output}"
+           gff3="result/{sample}.NB-ARC_hmmsearch_perseqhit_protein.gff3",
+           tsv="result/{sample}.NB-ARC_hmmsearch_perseqhit_protein.tsv"
+     run:
+           shell("mkdir -p {params}")
+           shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {params}")
+           shell("mv {params}.gff3 {output.gff3}")
+           shell("mv {params}.tsv {output.tsv}")
 #Search NB-ARC domain against library of Pfam
 rule pfam_scan:
      input:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
      output:
-           mkdir="./Pfam_{sample}",
            Pfamscan="tmp/{sample}.protein.fa_pfamscan.txt"
+     params:
+           "./Pfam_{sample}"
      run:
-           shell("mkdir -p {output.mkdir}")
-           shell("./script/pfam_scan.pl -fasta {input} -dir ~/ddatabase/PfamScan -as -cpu 16 -outfile {output.Pfamscan}")
+           shell("mkdir -p {params}")
+           shell("./Pfam/PfamScan/pfam_scan.pl -fasta {input} -dir ~/Pfam/ -as -cpu 16 -outfile {output.Pfamscan}")
 #Parsing the output of PfamScan output parser using the script 
 #K-parse_Pfam_domains_v3.1.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7
 rule K_parse:
