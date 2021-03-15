@@ -399,13 +399,22 @@ rule K_parse:
 rule K_parse_fusion:
       input:
            verbose="tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose",
-           db="genome/db_descriptions.txt"
-      output:
-           
+           db="genome/db_descriptions.txt",
       params:
            mkdir="tmp/Pfam_{sample}_parser"
       run:
            shell("mkdir -p {params.mkdir}")
            shell("cp {input.verbose} {params.mkdir}/")
            shell("perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_NLR-fusions-v2.2.pl --indir {params.mkdir} --evalue 0.001 -o {params.mkdir} -d {input.db}")
-
+#use NLR_filter_gene_models.py to filt gene models based on privous output#
+rule NLR_filter_gene_model:
+       input:
+           braker="braker/{sample}_braker.gtf",
+           tsv="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.tsv",
+           all_20kb="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+           hmmer="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa",
+           genomebase="genome/{sample}.fa"
+       output:
+              
+       run:
+           shell("python ~/nlr_annotation_scripts/NLR_filter_gene_models.py {input.braker} {input.tsv} {input.all_20kb} {input.hmmer} {input.genomebase}")
