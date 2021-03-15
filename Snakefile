@@ -389,15 +389,16 @@ rule K_parse:
      input:
            "tmp/{sample}.protein.fa_pfamscan.txt"
      output:
-           "tmp/{sample}.protein.fa_pfamscan_parsed.verbose"
+           "tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose"
      shell:
            "perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_v3.1.pl --pfam {input} --evalue 0.001 --output {output} --verbose T"
 #Parsing the output of PfamScan output parser using the script "K-parse_Pfam_domains_NLR-fusions-v2.4.2.pl"#
-#K-parse_Pfam_domains_NLR-fusions-v2.4.1.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7               
+#K-parse_Pfam_domains_NLR-fusions-v2.2.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7               
 #Remember to make a db_descriptions.txt file in genome folder
+#Replace Species_ID with Species, and make species name same as sample name#
 rule K_parse_fusion:
       input:
-           verbose="tmp/{sample}.protein.fa_pfamscan_parsed.verbose",
+           verbose="tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose",
            db="genome/db_descriptions.txt"
       output:
            
@@ -405,6 +406,6 @@ rule K_parse_fusion:
            mkdir="tmp/Pfam_{sample}_parser"
       run:
            shell("mkdir -p {params.mkdir}")
-           shell("mv {input.verbose} {params.mkdir}/")
-           shell("perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_NLR-fusions-v2.4.1.pl --indir {params.mkdir} --evalue 0.001 -o {params.mkdir} -d {input.db}")
+           shell("cp {input.verbose} {params.mkdir}/")
+           shell("perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_NLR-fusions-v2.2.pl --indir {params.mkdir} --evalue 0.001 -o {params.mkdir} -d {input.db}")
 
