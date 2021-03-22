@@ -249,28 +249,28 @@ rule convert_format:
          "cat {input} | awk '/^>/ {{print($0)}}; /^[^>]/ {{print(toupper($0))}}' > {output}"   
 #Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
-rule translate:
-     input:
-         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
-     output: 
-         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
-     shell:  
-         "Peris_NLR/Myrtaceae_NLR_workflow/translate.py {input} {output}"
+#rule translate:
+#     input:
+#         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
+#     output: 
+#         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
+#     shell:  
+#         "Peris_NLR/Myrtaceae_NLR_workflow/translate.py {input} {output}"
 #----------------------------------To classify the output of annotator and hmm#
 #Remove * in stop codon, otherwise interproscan will not work#
-rule remove_stop_codon:
-     input:
-         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
-     shell:
-         "sed -i 's/*//g' {input}"
+#rule remove_stop_codon:
+#     input:
+#         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
+#     shell:
+#         "sed -i 's/*//g' {input}"
 #Run Interproscan, database options: Pfam, coils, gene3D #
-rule Interproscan:
-     input:
-         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
-     params:
-         "tmp/"
-     shell:
-          "./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d {params}"
+#rule Interproscan:
+#     input:
+#         "tmp/{sample}.all_20kbflanking_merged_upper.faa"
+#     params:
+#         "tmp/"
+#     shell:
+#          "./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam,COILS,Gene3D -i {input} -f tsv,gff3 -d {params}"
 #Predict genes by using braker, remove special header first##Remember to use extended one#
 #RefPlantNLR_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2#
 #Remember to correct the path for braker.pl#
@@ -303,13 +303,19 @@ rule braker_gff_to_fasta:
          bed="braker/{sample}_braker.gtf"
        output:
          aa="tmp/{sample}_braker.aa",
-         codingseq="tmp/{sample}_braker.codingseq"
+         codingseq="tmp/{sample}_braker.codingseq",
+         modified="tmp/{sample}_braker_modified.gtf"    
        params:
          "tmp/tmp_braker"
        run:
           shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
           shell("mv {params}.aa {output.aa}")
-          shell("mv {params}.codingseq {output.codingseq}")     
+          shell("mv {params}.codingseq {output.codingseq}")
+          shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
+          shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq")
+          shell("awk '{if($2 == "GeneMark.hmm") {print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$11"\t"$12"\t"$9"\t"$10} else{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12}}' {input.bed} >{output.modified}")
+          shell{"sed -i 's/_t/.t/g' {output.modified}")
+          shell{"sed -i 's/_g/.g/g' {output.modified}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
