@@ -66,12 +66,12 @@ rule convert_NLRpaser:
           """awk -v OFS='\\t' '{{if ($7 == "+") {{print $1, $4, $5, $1, "forward", $7}} else if ($7 == "-") print $1, $4, $5, $1, "reverse", $7}}' {input} >{output}"""
 #Convert to 20kbflanking bed file with bedtools#
 rule NLRpaser_20kbflanking:
-       input:
+      input:
           bed="tmp/{sample}.NLRparser.bed",
           genomefile="genome/{sample}.genomefile"
-       output:
+      output:
           "tmp/{sample}_NLRparser.20kbflanking.bed"
-       shell:
+      shell:
           "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - |bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, > {output}"
 #Part 1 already tested and passed#              
               
@@ -100,7 +100,7 @@ rule tblastn_to_bed:
          """awk -v OFS='\\t' '{{if ($10 - $9 > 0) {{print $2, $9, $10, $1, "forward", "+"}} else if ($10 - $9 < 0) print $2, $10, $9, $1, "reverse", "-"}}' {input} > {output}"""
 ##Generate 20kb flanking bed file for blast 
 rule blast_20kb:
-      input:
+     input:
          bed="tmp/{sample}.tblastnout.bed",
          genomefile="genome/{sample}.genomefile"
      output:
