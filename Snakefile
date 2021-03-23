@@ -415,7 +415,7 @@ rule K_parse_fusion:
 #use NLR_filter_gene_models.py to filt gene models based on privous output#
 rule NLR_filter_gene_model:
        input:
-           braker="braker/{sample}_braker.gtf",
+           braker="tmp/{sample}_braker_modified.gtf",
            tsv="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.tsv",
            all_20kb="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
            hmmer="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa",
