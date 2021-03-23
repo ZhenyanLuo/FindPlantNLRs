@@ -202,26 +202,26 @@ rule make_bed_hmmout:
          "awk -f Peris_NLR/Myrtaceae_NLR_workflow/make_bed_hmmOut.awk {input.NBARC} > {output}"     
 #Get 20kb upstream and downstream# 
 rule NBARC_20flanking:
-       input:
+     input:
           bed="tmp/{sample}_NBARC.bed",
           genomefile="genome/{sample}.genomefile"
-       output:
+     output:
           "tmp/{sample}_NBARC.20kbflanking.bed"
-       shell:
+     shell:
           "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
 #---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
 #-----------------------------------------------------------------part 4--------------------------------------------------------------------------------------------
 ##Combine the output together#
 #Include blast file after getting the query file#
 rule combine_all_bed:
-         input:
-             hmm="tmp/{sample}_NBARC.20kbflanking.bed",
-             annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
-             blast="tmp/{sample}.blast.20kbflanking.bed"
-         output:
-             "tmp/{sample}_all20kbflanking.bed"
-         shell:
-             "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
+     input:
+            hmm="tmp/{sample}_NBARC.20kbflanking.bed",
+            annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
+            blast="tmp/{sample}.blast.20kbflanking.bed"
+     output:
+            "tmp/{sample}_all20kbflanking.bed"
+     shell:
+            "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
 #Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
@@ -313,7 +313,7 @@ rule braker_gff_to_fasta:
           shell("mv {params}.codingseq {output.codingseq}")
           shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
           shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq")
-          shell("awk '{if($2 == "GeneMark.hmm") {print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$11"\t"$12"\t"$9"\t"$10} else{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12}}' {input.bed} >{output.modified}")
+          shell("awk '{{if($2 == "GeneMark.hmm") {{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$11"\t"$12"\t"$9"\t"$10}} else{{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12}}}' {input.bed} >{output.modified}")
           shell{"sed -i 's/_t/.t/g' {output.modified}")
           shell{"sed -i 's/_g/.g/g' {output.modified}")
 #Remove special characters and rename the augustus output#
