@@ -215,13 +215,13 @@ rule NBARC_20flanking:
 #Include blast file after getting the query file#
 rule combine_all_bed:
      input:
-            hmm="tmp/{sample}_NBARC.20kbflanking.bed",
-            annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
-            blast="tmp/{sample}.blast.20kbflanking.bed"
+         hmm="tmp/{sample}_NBARC.20kbflanking.bed",
+         annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
+         blast="tmp/{sample}.blast.20kbflanking.bed"
      output:
-            "tmp/{sample}_all20kbflanking.bed"
+         "tmp/{sample}_all20kbflanking.bed"
      shell:
-            "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
+         "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
 #Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
@@ -283,9 +283,9 @@ rule braker:
          ref="genome/prothint_sequences.fa"
      output:
          removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-         hints_gtf="BRAKER/scripts/braker/{sample)_augustus.hints.gtf",
-         gff3="BRAKER/scripts/braker/{sample}_augustus_out.gff3",
-         hints_aa="BRAKER/scripts/braker/{sample}_augustus.hints.aa"
+         hints_gtf="scripts/braker/{sample}_augustus.hints.gtf",
+         gff3="scripts/braker/{sample}_augustus_out.gff3",
+         hints_aa="scripts/braker/{sample}_augustus.hints.aa"
      params:
          "{sample}"
      run:
@@ -294,7 +294,7 @@ rule braker:
          shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
          shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
          shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
-         shell("mv scripts/braker/braker.gff3 scripts/braker/{sample}_braker.gff3")
+         shell("mv scripts/braker/braker.gff3 scripts/braker/{params}_braker.gff3")
          shell("rm -r scripts/braker/GeneMark-EP scripts/braker/GeneMark-ES")
 #Use getAnnoFastaFromJoingenes.py in augustus to get both nucleotide and protein sequence from braker.gtf#
 rule braker_gff_to_fasta:
@@ -313,9 +313,10 @@ rule braker_gff_to_fasta:
           shell("mv {params}.codingseq {output.codingseq}")
           shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
           shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq")
-          shell("awk '{{if($2 == "GeneMark.hmm") {{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$11"\t"$12"\t"$9"\t"$10}} else{{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12}}}' {input.bed} >{output.modified}")
-          shell{"sed -i 's/_t/.t/g' {output.modified}")
-          shell{"sed -i 's/_g/.g/g' {output.modified}")
+          shell("""cat {input.bed}| grep "GeneMark.hmm" | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$5,$6,$7,$8,$11,$12,$9,$10}}' > {output.genemark}""")
+          shell("grep 'AUGUSTUS' {input.bed} > {output.augustus}")
+          shell("cat {output.genemark} {output.augustus} >{output.modified}")
+          shell("sed -i 's/_t/.t/g; s/_g/.g/g' {output.modified}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
