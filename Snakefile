@@ -277,6 +277,7 @@ rule convert_format:
 ####Please double check#
 #This step is modified from Peri's script: braker_nlr.pbs#
 #Remove sample species from config file of braker if you stopped once#
+#Note that some neccessary scripts are not in the augustus folder and need to manually move them from braker folder to augustus/scripts/, just simply use mv *.py *.pl
 rule braker:
      input:
          raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
