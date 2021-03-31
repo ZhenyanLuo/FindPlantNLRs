@@ -282,22 +282,22 @@ rule convert_format:
 ####Please double check#
 #This step is modified from Peri's script: braker_nlr.pbs#
 #Remove sample species from config file of braker if you stopped once#
-#rule braker:
-#    input:
-#        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-#        ref="genome/prothint_sequences.fa"
-#    output:
-#        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-#        hints_gtf="braker/{sample}_braker.gtf",
-#        gff3="braker/{sample}_augustus.gtf"
-#    params:
-#        "{sample}"
-#    run:
-#        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-#        shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
-#        shell("mv braker/augustus.hints.gtf {output.gff3}")
-#        shell("mv braker/braker.gtf {output.hints_gtf}")
-#        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
+rule braker:
+    input:
+        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+        ref="genome/prothint_sequences.fa"
+    output:
+        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
+        hints_gtf="braker/{sample}_braker.gtf",
+        gff3="braker/{sample}_augustus.gtf"
+    params:
+        "{sample}"
+    run:
+        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
+        shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
+        shell("mv braker/augustus.hints.gtf {output.gff3}")
+        shell("mv braker/braker.gtf {output.hints_gtf}")
+        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Use getAnnoFastaFromJoingenes.py in augustus to get both nucleotide and protein sequence from braker.gtf#
 rule braker_gff_to_fasta:
      input:
