@@ -1,7 +1,7 @@
 #Necessary packages:NLR-parser, NLR-annotator, BRAKER, samtools, blast, interproscan, etc.#
 #use bash conda_install.sh command to install neccessary modules#
 #Adapted from Tamene Tolessa's script#
-SAMPLES = ["E_globulus"]
+SAMPLES = ["Eglobulus_101_V1"]
 #Making a temp folder#
 import os
 path = 'tmp'
@@ -13,9 +13,14 @@ if not os.path.exists(result):
 #Remember to correct this since this should be the final output#
 rule all:
      input:
-       expand('tmp/{sample}.NLRparser.20kbflanking.fa', sample=SAMPLES)
-#----------------------------------------------------------Start from NLR_annotator---------------------------------------------------------------------------------
-#-----------------------------------------------------------------part 1--------------------------------------------------------------------------------------------
+         expand('tmp/{sample}_braker_modified.gtf', sample=SAMPLES),
+         expand('tmp/{sample}.NB-ARC_hmmsearch.tsv', sample=SAMPLES),
+         expand('tmp/{sample}.NB-ARC_hmmsearch.gff3', sample=SAMPLES),
+         expand('tmp/{sample}.all_20kbflanking_merged_upper.fasta', sample=SAMPLES),
+         expand('tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa', sample=SAMPLES),
+         expand('tmp/{sample}_all_20kbflanking_removed.fasta', sample=SAMPLES),
+#         expand('braker/{sample}_augustus.gtf', sample=SAMPLES),
+         expand('braker/{sample}_braker.gtf', sample=SAMPLES)
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
      input:
@@ -66,12 +71,12 @@ rule convert_NLRpaser:
           """awk -v OFS='\\t' '{{if ($7 == "+") {{print $1, $4, $5, $1, "forward", $7}} else if ($7 == "-") print $1, $4, $5, $1, "reverse", $7}}' {input} >{output}"""
 #Convert to 20kbflanking bed file with bedtools#
 rule NLRpaser_20kbflanking:
-      input:
+       input:
           bed="tmp/{sample}.NLRparser.bed",
           genomefile="genome/{sample}.genomefile"
-      output:
+       output:
           "tmp/{sample}_NLRparser.20kbflanking.bed"
-      shell:
+       shell:
           "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - |bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, > {output}"
 #Part 1 already tested and passed#              
               
@@ -202,26 +207,26 @@ rule make_bed_hmmout:
          "awk -f Peris_NLR/Myrtaceae_NLR_workflow/make_bed_hmmOut.awk {input.NBARC} > {output}"     
 #Get 20kb upstream and downstream# 
 rule NBARC_20flanking:
-     input:
+       input:
           bed="tmp/{sample}_NBARC.bed",
           genomefile="genome/{sample}.genomefile"
-     output:
+       output:
           "tmp/{sample}_NBARC.20kbflanking.bed"
-     shell:
+       shell:
           "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
 #---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
 #-----------------------------------------------------------------part 4--------------------------------------------------------------------------------------------
 ##Combine the output together#
 #Include blast file after getting the query file#
 rule combine_all_bed:
-     input:
-         hmm="tmp/{sample}_NBARC.20kbflanking.bed",
-         annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
-         blast="tmp/{sample}.blast.20kbflanking.bed"
-     output:
-         "tmp/{sample}_all20kbflanking.bed"
-     shell:
-         "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
+         input:
+             hmm="tmp/{sample}_NBARC.20kbflanking.bed",
+             annotator="tmp/{sample}_NLRparser.20kbflanking.bed",
+             blast="tmp/{sample}.blast.20kbflanking.bed"
+         output:
+             "tmp/{sample}_all20kbflanking.bed"
+         shell:
+             "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n >{output}"
 #Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
@@ -277,75 +282,73 @@ rule convert_format:
 ####Please double check#
 #This step is modified from Peri's script: braker_nlr.pbs#
 #Remove sample species from config file of braker if you stopped once#
-#Note that some neccessary scripts are not in the augustus folder and need to manually move them from braker folder to augustus/scripts/, just simply use mv *.py *.pl
-rule braker:
-     input:
-         raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-         ref="genome/prothint_sequences.fa"
-     output:
-         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-         hints_gtf="scripts/braker/{sample}_augustus.hints.gtf",
-         gff3="scripts/braker/{sample}_augustus_out.gff3",
-         hints_aa="scripts/braker/{sample}_augustus.hints.aa"
-     params:
-         "{sample}"
-     run:
-         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-         shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
-         shell("./Augustus/scripts/gtf2gff.pl <{output.hints_gtf} --printExon --out={output.gff3} --gff3")
-         shell("mv scripts/braker/augustus.hints.gtf {output.hints_gtf}")
-         shell("mv scripts/braker/augustus.hints.aa {output.hints_aa}")
-         shell("mv scripts/braker/braker.gff3 scripts/braker/{params}_braker.gff3")
-         shell("rm -r scripts/braker/GeneMark-EP scripts/braker/GeneMark-ES")
+#rule braker:
+#    input:
+#        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+#        ref="genome/prothint_sequences.fa"
+#    output:
+#        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
+#        hints_gtf="braker/{sample}_braker.gtf",
+#        gff3="braker/{sample}_augustus.gtf"
+#    params:
+#        "{sample}"
+#    run:
+#        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
+#        shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
+#        shell("mv braker/augustus.hints.gtf {output.gff3}")
+#        shell("mv braker/braker.gtf {output.hints_gtf}")
+#        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Use getAnnoFastaFromJoingenes.py in augustus to get both nucleotide and protein sequence from braker.gtf#
 rule braker_gff_to_fasta:
-       input:
-         genome="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+     input:
+         genome="tmp/{sample}_all_20kbflanking_removed.fasta",
          bed="braker/{sample}_braker.gtf"
-       output:
+     output:
          aa="tmp/{sample}_braker.aa",
          codingseq="tmp/{sample}_braker.codingseq",
-         modified="tmp/{sample}_braker_modified.gtf"    
-       params:
+         modified="tmp/{sample}_braker_modified.gtf",
+         genemark="tmp/{sample}_braker_genemark.gtf",
+         augustus="tmp/{sample}_braker_augustus.gtf"    
+     params:
          "tmp/tmp_braker"
-       run:
-          shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
-          shell("mv {params}.aa {output.aa}")
-          shell("mv {params}.codingseq {output.codingseq}")
-          shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
-          shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq")
-          shell("""cat {input.bed}| grep "GeneMark.hmm" | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$5,$6,$7,$8,$11,$12,$9,$10}}' > {output.genemark}""")
-          shell("grep 'AUGUSTUS' {input.bed} > {output.augustus}")
-          shell("cat {output.genemark} {output.augustus} >{output.modified}")
-          shell("sed -i 's/_t/.t/g; s/_g/.g/g' {output.modified}")
+     run:
+         shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
+         shell("mv {params}.aa {output.aa}")
+         shell("mv {params}.codingseq {output.codingseq}")
+         shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
+         shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq}")
+         shell("""cat {input.bed}| grep "GeneMark.hmm" | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$5,$6,$7,$8,$11,$12,$9,$10}}' > {output.genemark}""")
+         shell("grep 'AUGUSTUS' {input.bed} > {output.augustus}")
+         shell("cat {output.genemark} {output.augustus} >{output.modified}")
+         shell("sed -i 's/_t/.t/g; s/_g/.g/g' {output.modified}")
 #Remove special characters and rename the augustus output#
 rule braker_step2:
      input:
-          "tmp/{sample}_braker.aa"
+         "tmp/{sample}_braker.aa"
      output:
-          "tmp/{sample}_braker.faa"
+         "tmp/{sample}_braker.faa"
      shell:
-          "sed s/\*//g {input} > {output}"
+         "sed s/\*//g {input} > {output}"
 ###Tamene's version, use PF00931 and Pfam-A.hmm----------------------------------------------------------------
 #Let's start from using hmm profile built ({sample}.hmm) #
 rule hmmsearch:
      input:
-           "tmp/{sample}_braker.faa"
+          "tmp/{sample}_braker.faa"
      output:
-           noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
-           tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
+          noali="tmp/{sample}.NB-ARC_tblout_noali.txt",
+          tblout="tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
      params:
-           "Pfam/PF00931.hmm"
+          "Pfam/PF00931.hmm"
      shell:
-           "hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {params} {input}"
+          "hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {params} {input}"
 #Sorting out and cutting of sequence IDs of domains
 rule grep_hmmsearch:
      input:
-           "tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
+          "tmp/{sample}.NB-ARC_hmmsearch_tblout.perseqhit.txt"
      output:
-           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"
+          "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_seqID.txt"
      shell:
-           "grep -v '#' {input} | sort -k5,5n | cut -d ' ' -f1 | uniq > {output}"
+          "grep -v '#' {input} | sort -k5,5n | cut -d ' ' -f1 | uniq > {output}"
 #Using the sequence ID and seqtk to pull out protein sequences of NB-ARC domains
 rule seqtk:
      input:
@@ -366,16 +369,13 @@ rule sed:
 rule interproscan_NBARC:
      input:
            "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
-     params:
-           "result/Interpro_{sample}"
      output:
-           gff3="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.gff3",
-           tsv="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.tsv"
+           gff3="tmp/{sample}.NB-ARC_hmmsearch.gff3",
+           tsv="tmp/{sample}.NB-ARC_hmmsearch.tsv"
      run:
-           shell("mkdir -p {params}")
-           shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d {params}")
-           shell("mv {params}/{sample}.NB-ARC_hmmsearch_perseqhit_protein.gff3 {output.gff3}")
-           shell("mv {params}/{sample}.NB-ARC_hmmsearch_perseqhit_protein.tsv {output.tsv}")
+           shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d tmp/")
+           shell("mv {input}.gff3 {output.gff3}")
+           shell("mv {input}.tsv {output.tsv}")
 #Search NB-ARC domain against library of Pfam
 #wget http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 #wget http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
@@ -393,36 +393,34 @@ rule pfam_scan:
            shell("./Pfam/PfamScan/pfam_scan.pl -fasta {input} -dir {params} -as -cpu 16 -outfile {output.Pfamscan}")
 #Parsing the output of PfamScan output parser using the script
 #K-parse_Pfam_domains_v3.1.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7
-rule K_parse:
-     input:
-           "tmp/{sample}.protein.fa_pfamscan.txt"
-     output:
-           "tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose"
-     shell:
-           "perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_v3.1.pl --pfam {input} --evalue 0.001 --output {output} --verbose T"
+#rule K_parse:
+#     input:
+#           "tmp/{sample}.protein.fa_pfamscan.txt"
+#     output:
+#           "tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose"
+#     shell:
+#           "perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_v3.1.pl --pfam {input} --evalue 0.001 --output {output} --verbose T"
 #Parsing the output of PfamScan output parser using the script "K-parse_Pfam_domains_NLR-fusions-v2.4.2.pl"#
 #K-parse_Pfam_domains_NLR-fusions-v2.2.pl from https://github.com/krasileva-group/plant_rgenes is used in this step, ref: https://bmcbiol.biomedcentral.com/articles/10.1186/s12915-016-0228-7               
 #Remember to make a db_descriptions.txt file in genome folder
 #Replace Species_ID with Species, and make species name same as sample name#
-rule K_parse_fusion:
-      input:
-           verbose="tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose",
-           db="genome/db_descriptions.txt",
-      params:
-           mkdir="tmp/Pfam_{sample}_parser"
-      run:
-           shell("mkdir -p {params.mkdir}")
-           shell("cp {input.verbose} {params.mkdir}/")
-           shell("perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_NLR-fusions-v2.2.pl --indir {params.mkdir} --evalue 0.001 -o {params.mkdir} -d {input.db}")
+#rule K_parse_fusion:
+#      input:
+#           verbose="tmp/{sample}.protein.fa_pfamscan-0-.parsed.verbose",
+#           db="genome/db_descriptions.txt"
+#      params:
+#           mkdir="tmp/Pfam_{sample}_parser"
+#      run:
+#           shell("mkdir -p {params.mkdir}")
+#           shell("cp {input.verbose} {params.mkdir}/")
+#           shell("perl ~/nlr_annotation_scripts/K-parse_Pfam_domains_NLR-fusions-v2.2.pl --indir {params.mkdir} --evalue 0.001 -o {params.mkdir} -d {input.db}")
 #use NLR_filter_gene_models.py to filt gene models based on privous output#
-rule NLR_filter_gene_model:
-       input:
-           braker="tmp/{sample}_braker_modified.gtf",
-           tsv="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.tsv",
-           all_20kb="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-           hmmer="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa",
-           genomebase="genome/{sample}.fa"
-       output:
-              
-       run:
-           shell("python ~/nlr_annotation_scripts/NLR_filter_gene_models.py {input.braker} {input.tsv} {input.all_20kb} {input.hmmer} {input.genomebase}")
+#rule NLR_filter_gene_model:
+#       input:
+#           braker="tmp/{sample}_braker_modified.gtf",
+#           tsv="result/Interpro_{sample}/{sample}.NB-ARC_hmmsearch.tsv",
+#           all_20kb="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+#           hmmer="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa",
+#           genomebase="genome/{sample}.fa"             
+#       run:
+#           shell("python ~/nlr_annotation_scripts/NLR_filter_gene_models.py {input.braker} {input.tsv} {input.all_20kb} {input.hmmer} {input.genomebase}")
