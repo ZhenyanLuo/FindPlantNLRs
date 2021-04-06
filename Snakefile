@@ -245,13 +245,13 @@ rule convert_20kbflankingbedfile_fasta:
      shell:
           "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
-rule convert_format:
-     input:
-         "tmp/{sample}.all_20kbflanking_merged.fasta"
-     output:
-         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
-     shell:
-         "cat {input} | awk '/^>/ {{print($0)}}; /^[^>]/ {{print(toupper($0))}}' > {output}"   
+#rule convert_format:
+#     input:
+#         "tmp/{sample}.all_20kbflanking_merged.fasta"
+#     output:
+#         "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
+#     shell:
+#         "cat {input} | awk '/^>/ {{print($0)}}; /^[^>]/ {{print(toupper($0))}}' > {output}"   
 #Maybe use 20kbflanking.fa instead of NBARC_nt.fasta#
 #Translate nucleotide NBARC sequeces including extended sequences#
 #rule translate:
@@ -284,7 +284,7 @@ rule convert_format:
 #Remove sample species from config file of braker if you stopped once#
 rule braker:
     input:
-        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+        raw="tmp/{sample}.all_20kbflanking_merged.fasta",
         ref="genome/prothint_sequences.fa"
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
@@ -294,7 +294,7 @@ rule braker:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-        shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --species={params} --gff3")
+        shell("./scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --epmode --softmasking --species={params} --gff3")
         shell("mv braker/augustus.hints.gtf {output.gff3}")
         shell("mv braker/braker.gtf {output.hints_gtf}")
         shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
