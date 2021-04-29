@@ -376,6 +376,15 @@ rule interproscan_NBARC:
            shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input} -cpu 16 -f tsv, gff3 -d tmp/")
            shell("mv {input}.gff3 {output.gff3}")
            shell("mv {input}.tsv {output.tsv}")
+#make a fimo output
+#rule fimo:
+#       input:
+#           "tmp/{sample}.NB-ARC_hmmsearch_perseqhit_protein.fa"
+#       params:
+#           meme="NLR-Annotator/meme.xml",
+#           dir="tmp/{sample}_fimo_output"
+#       run:
+#           shell("fimo --o {params.dir} {params.meme} {input}")
 #Search NB-ARC domain against library of Pfam
 #wget http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 #wget http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
