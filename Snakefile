@@ -234,7 +234,8 @@ rule merge_all_20kbflanking:
      output:
          "tmp/{sample}.all_20kbflanking_merged.bed"
      shell:
-         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} > {output}"               
+#         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} > {output}"     
+         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk '{print $1"\t"$2"\t"$3}'|sort -k1,2|uniq > {output}"    
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
@@ -243,7 +244,8 @@ rule convert_20kbflankingbedfile_fasta:
      output:
           "tmp/{sample}.all_20kbflanking_merged.fasta"
      shell:
-          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}"
+#          "bedtools getfasta -s -fi {input.genome} -bed {input.bed} -fo {output}"
+          "bedtools getfasta -fi {input.genome} -bed {input.bed} -fo {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 #rule convert_format:
 #     input:
