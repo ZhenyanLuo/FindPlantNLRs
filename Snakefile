@@ -2,6 +2,12 @@
 #use bash conda_install.sh command to install neccessary modules#
 #Adapted from Tamene Tolessa's script#
 SAMPLES = ["Eglobulus_101_V1"]
+#SAMPLES= ["A_floribunda, C_calophylla, C_maculata, E_albens, E_brandiana, E_caleyi,\
+#E_camaldulensis, E_cladocalyx, E_cloeziana, E_coolabah, E_curtisii, E_dawsonii, E_decipiens, \
+#E_erythrocorys, E_fibrosa, E_globulus, E_grandis, E_guilfoylei, E_lansdowneana, E_leucophloia, \
+#E_marginata, E_melliodora, E_melliodora, E_microcorys, E_paniculata, E_pauciflora, E_polyanthemos, \
+#E_pumila, E_regnans, E_shirleyi, E_sideroxylon, E_tenuipes, E_victrix, E_viminalis, E_virginea, \
+#P_guajava, C_citriodora, R_argentea, M_polymorpha, S_oleosum, R_rubescens, R_argentea"]
 #Making a temp folder#
 import os
 path = 'tmp'
