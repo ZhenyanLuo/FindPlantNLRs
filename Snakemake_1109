@@ -258,47 +258,47 @@ rule braker:
         ref="genome/prothint_sequences.fa"
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-#        hints_gtf="braker/{sample}_braker.gtf",
-#        gff3="braker/{sample}_augustus.gtf"
-#    params:
-#        "{sample}"
-#    run:
-#        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-#        shell("./braker_2.1.6/BRAKER/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --species={params} --gff3")
-#        shell("mv braker/augustus.hints.gtf {output.gff3}")
-#        shell("mv braker/braker.gtf {output.hints_gtf}")
-#        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
+        hints_gtf="braker/{sample}_braker.gtf",
+        gff3="braker/{sample}_augustus.gtf"
+    params:
+        "{sample}"
+    run:
+        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
+        shell("./braker_2.1.6/BRAKER/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --species={params} --gff3")
+        shell("mv braker/augustus.hints.gtf {output.gff3}")
+        shell("mv braker/braker.gtf {output.hints_gtf}")
+        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Use getAnnoFastaFromJoingenes.py in augustus to get both nucleotide and protein sequence from braker.gtf#
-#rule braker_gff_to_fasta:
-#     input:
-#         genome="tmp/{sample}_all_20kbflanking_removed.fasta",
-#         bed="braker/{sample}_braker.gtf"
-#     output:
-#         aa="tmp/{sample}_braker.aa",
-#         codingseq="tmp/{sample}_braker.codingseq",
-#         modified="tmp/{sample}_braker_modified.gtf",
-#         genemark="tmp/{sample}_braker_genemark.gtf",
-#         augustus="tmp/{sample}_braker_augustus.gtf"    
-#     params:
-#         "tmp/tmp_braker"
-#     run:
-#         shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
-#         shell("mv {params}.aa {output.aa}")
-#         shell("mv {params}.codingseq {output.codingseq}")
-#         shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
-#         shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq}")
-#         shell("""cat {input.bed}| grep "GeneMark.hmm" | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$5,$6,$7,$8,$11,$12,$9,$10}}' > {output.genemark}""")
-#         shell("grep 'AUGUSTUS' {input.bed} > {output.augustus}")
-#         shell("cat {output.genemark} {output.augustus} >{output.modified}")
-#         shell("sed -i 's/_t/.t/g; s/_g/.g/g' {output.modified}")
-#Remove special characters and rename the augustus output#
-#rule braker_step2:
-#     input:
-#         "tmp/{sample}_braker.aa"
-#     output:
-#         "tmp/{sample}_braker.faa"
-#     shell:
-#         "sed s/\*//g {input} > {output}"
+rule braker_gff_to_fasta:
+     input:
+         genome="tmp/{sample}_all_20kbflanking_removed.fasta",
+         bed="braker/{sample}_braker.gtf"
+     output:
+         aa="tmp/{sample}_braker.aa",
+         codingseq="tmp/{sample}_braker.codingseq",
+         modified="tmp/{sample}_braker_modified.gtf",
+         genemark="tmp/{sample}_braker_genemark.gtf",
+         augustus="tmp/{sample}_braker_augustus.gtf"    
+     params:
+         "tmp/tmp_braker"
+     run:
+         shell("./Augustus/scripts/getAnnoFastaFromJoingenes.py -g {input.genome} -f {input.bed} -o {params}")
+         shell("mv {params}.aa {output.aa}")
+         shell("mv {params}.codingseq {output.codingseq}")
+         shell("sed -i 's/file_1_//g' {output.aa} {output.codingseq}")
+         shell("sed -i 's/file_2_//g' {output.aa} {output.codingseq}")
+         shell("""cat {input.bed}| grep "GeneMark.hmm" | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$5,$6,$7,$8,$11,$12,$9,$10}}' > {output.genemark}""")
+         shell("grep 'AUGUSTUS' {input.bed} > {output.augustus}")
+         shell("cat {output.genemark} {output.augustus} >{output.modified}")
+         shell("sed -i 's/_t/.t/g; s/_g/.g/g' {output.modified}")
+Remove special characters and rename the augustus output#
+rule braker_step2:
+     input:
+         "tmp/{sample}_braker.aa"
+     output:
+         "tmp/{sample}_braker.faa"
+     shell:
+         "sed s/\*//g {input} > {output}"
 ###Tamene's version, use PF00931 and Pfam-A.hmm----------------------------------------------------------------
 #Let's start from using hmm profile built ({sample}.hmm) #
 #rule hmmsearch:
@@ -394,3 +394,5 @@ rule braker:
 #           genomebase="genome/{sample}.fa"             
 #       run:
 #           shell("python ~/nlr_annotation_scripts/NLR_filter_gene_models.py {input.braker} {input.tsv} {input.all_20kb} {input.hmmer} {input.genomebase}")
+#######Peri version
+rule Identify_
