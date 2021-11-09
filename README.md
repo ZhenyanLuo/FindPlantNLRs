@@ -34,4 +34,5 @@ conda install -c bioconda blast=2.7.1 -y
 conda install -c bioconda seqkit=2.0.0 -y
 conda install -c conda-forge openjdk -y
 ```
-[Install NLR-Annotator and dependencies]:(https://github.com/steuernb/NLR-Annotator)
+
+[Install NLR-Annotator and dependencies](https://github.com/steuernb/NLR-Annotator)
