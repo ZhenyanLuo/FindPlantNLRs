@@ -6,6 +6,8 @@
 genome="genome/"
 SAMPLES = list(set([x.split(".")[0] for x in os.listdir(genome) if x.endswith("fa")]))
 import os
+
+
 path = 'tmp'
 if not os.path.exists(path):
        os.mkdir(path)
@@ -119,18 +121,18 @@ rule find_TIR:
      run:
          shell("nhmmer {input.nonTIR} {input.genome} > {output.nonTIR_out}")
          shell("nhmmer {input.TIR} {input.genome} > {output.TIR_out}")
-#convert both nhmmer output into bed file by using awk script#
+#convert both nhmmer output into bed file by using awk script
 rule awk_convert:
      input:
          TIR_out="tmp/{sample}.TIRout",
          nonTIR_out="tmp/{sample}.nonTIRout"
      output:
          TIRoutbed="tmp/{sample}.TIRout.bed",
-         nonTIRoutbed="tmp/{sample}.nonTIRout.
+         nonTIRoutbed="tmp/{sample}.nonTIRout.bed"
      run:
-         shell("""cat {input.TIR_out}|grep -v '#'|awk '(NR>=6)'|awk '{{if ($6 - $5 > 0) {{print $4"\\t"$5"\\t"$6"\\t"$4"\\t""forward""\\t""+"}} else if ($6 - $5 < 0) print $4"\\t"$6"\\t"$5"\\t"$4"\\t""reverse""\\t""-"}}' > {output.TIRoutbed}""")
-         shell("""cat {input.nonTIR_out}|grep -v '#'|awk '(NR>=6)'|awk '{{if ($6 - $5 > 0) {{print $4"\\t"$5"\\t"$6"\\t"$4"\\t""forward""\\t""+"}} else if ($6 - $5 < 0) print $4"\\t"$6"\\t"$5"\\t"$4"\\t""reverse""\\t""-"}}' > {output.nonTIRoutbed}""")
-#convert both bed file into fasta file by using bedtools#
+         shell("""cat {input.TIR_out}|grep -v '#'|awk '(NR>=6)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4 ,"reverse","-"}}' > {output.TIRoutbed}""")
+         shell("""cat {input.nonTIR_out}|grep -v '#'|awk '(NR>=6)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4 ,"reverse","-"}}' > {output.nonTIRoutbed}""")
+#convert both bed file into fasta file by using bedtools
 rule bedtools:
      input:
          TIR_bed="tmp/{sample}.TIRout.bed",
@@ -142,7 +144,7 @@ rule bedtools:
      run:
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output.TIR_fasta}")
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output.nonTIR_fasta}")
-#Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary (why?#
+#Extract first 200 sequences from previously output nonTIR and TIR fasta file, change 200 into other number when neccessary 
 rule awk:
      input:
          nonTIR="tmp/{sample}.nonTIR.fasta",
@@ -196,7 +198,7 @@ rule make_bed_hmmout:
      output:
          "tmp/{sample}_NBARC.bed"
      shell:
-         """cat {input.NBARC}|grep -v '#'|awk '(NR>=6)'|awk '{{if ($6 - $5 > 0) {{print $4"\\t"$5"\\t"$6"\\t"$4"\\t""forward""\\t""+"}} else if ($6 - $5 < 0) print $4"\\t"$6"\\t"$5"\\t"$4"\\t""reverse""\\t""-"}}' > {output}"""     
+         """cat {input.NBARC}|grep -v '#'|awk '(NR>=6)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4 ,"reverse","-"}}' > {output}"""     
 #Get 20kb upstream and downstream# 
 rule NBARC_20flanking:
      input:
@@ -250,12 +252,12 @@ rule convert_format:
 ####Please double check#
 #This step is modified from Peri's script: braker_nlr.pbs#
 #Remove sample species from config file of braker if you stopped once#
-#rule braker:
-#    input:
-#        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-#        ref="genome/prothint_sequences.fa"
-#    output:
-#        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
+rule braker:
+    input:
+        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
+        ref="genome/prothint_sequences.fa"
+    output:
+        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
 #        hints_gtf="braker/{sample}_braker.gtf",
 #        gff3="braker/{sample}_augustus.gtf"
 #    params:
