@@ -22,7 +22,8 @@ hmmsearch:
 ## Manual
 
 ### Create a conda environment and install neccessary dependencies
-``` conda create -n NLR -y
+``` 
+conda create -n NLR -y
 conda activate NLR
 conda install -c bioconda snakemake=6.10.0 -y
 conda install python=3.6.5 -y
