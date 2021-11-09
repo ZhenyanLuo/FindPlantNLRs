@@ -36,3 +36,6 @@ conda install -c conda-forge openjdk -y
 ```
 
 [Install NLR-Annotator and dependencies](https://github.com/steuernb/NLR-Annotator)
+[Install Interproscan.sh](https://www.ebi.ac.uk/interpro/download/)
+[Install Braker](https://github.com/Gaius-Augustus/BRAKER)
+
