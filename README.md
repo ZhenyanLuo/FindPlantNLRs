@@ -35,6 +35,7 @@ conda install -c bioconda seqkit=2.0.0 -y
 conda install -c conda-forge openjdk -y
 ```
 
+
 [Install NLR-Annotator and dependencies](https://github.com/steuernb/NLR-Annotator)
 
 [Install Braker2 for gene prediction](https://github.com/Gaius-Augustus/BRAKER)
