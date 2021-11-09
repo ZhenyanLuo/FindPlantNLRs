@@ -45,8 +45,6 @@ rule index_ref_seq:
          "genome/{sample}.fa"
      output:
          "genome/{sample}.fa.fai"
-     envmodules:
-         "NLR/samtools/1.9"
      shell:
          "samtools faidx {input}"
 #Create genome file. (?)#
@@ -72,8 +70,6 @@ rule NLRpaser_20kbflanking:
           genomefile="genome/{sample}.genomefile"
        output:
           "tmp/{sample}_NLRparser.20kbflanking.bed"
-       envmodules:
-          "NLR/bedtools/2.30.0"
        shell:
           "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - |bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, > {output}"
 #-------------------------------------------Use blast to identify genes which cannot be detected by NLR annotator pipeline------------------------------------------
@@ -86,8 +82,6 @@ rule run_tblastn:
          ref="ref_db/journal.pbio.3001124.s013.fasta"
      output:
          outfmt6="tmp/{sample}.tblastnout.outfmt6"
-     envmodules:
-         "NLR/blast/2.7.1"
      params:
          "tmp/{sample}.database"
      run:
@@ -108,8 +102,6 @@ rule blast_20kb:
          genomefile="genome/{sample}.genomefile"
      output:
          "tmp/{sample}.blast.20kbflanking.bed"
-     envmodules:
-          "NLR/bedtools/2.30.0"
      shell:
          """ bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} | bedtools sort -i - | bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct,  >  {output}"""      
 #Adapted from Peri Tobias' s scripts------------------------------------------------------------------------------------------------
@@ -124,8 +116,6 @@ rule find_TIR:
      output:
          TIR_out="tmp/{sample}.TIRout",
          nonTIR_out="tmp/{sample}.nonTIRout"
-     envmodules:
-         "NLR/hmmer/3.3.2"
      run:
          shell("nhmmer {input.nonTIR} {input.genome} > {output.nonTIR_out}")
          shell("nhmmer {input.TIR} {input.genome} > {output.TIR_out}")
@@ -149,8 +139,6 @@ rule bedtools:
      output:
          TIR_fasta="tmp/{sample}.TIR.fasta",
          nonTIR_fasta="tmp/{sample}.nonTIR.fasta"
-     envmodules:
-         "NLR/bedtools/2.30.0"
      run:
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.TIR_bed} -fo {output.TIR_fasta}")
          shell("bedtools getfasta -s -fi {input.genome} -bed {input.nonTIR_bed} -fo {output.nonTIR_fasta}")
@@ -173,8 +161,6 @@ rule seqkit:
          "tmp/{sample}_NBARC_400.fasta"
      output:
          "tmp/{sample}_NBARC.fasta"
-     envmodules:
-         "NLR/seqkit/2.0.0"
      shell:
          "seqkit rmdup -D duplicates -n {input} > {output}"
 #Generate alignment by using clustalo#
@@ -183,8 +169,6 @@ rule clustalo:
          "tmp/{sample}_NBARC.fasta"
      output:
          "tmp/{sample}_NBARC.sto"
-     envmodules:
-         "NLR/clustalo/1.2.4"
      shell:
          "clustalo -i {input} -o {output} --outfmt=st"
 #Build a profile hmm from an alignment#
@@ -193,8 +177,6 @@ rule hmmbuild:
          "tmp/{sample}_NBARC.sto"
      output:
          "tmp/{sample}.hmm"
-     envmodules:
-         "NLR/hmmer/3.3.2"
      shell:
          "hmmbuild -nucleic {output} {input}"
 #Use hmm profile built to search queries against genome#
@@ -204,8 +186,6 @@ rule nhmmer:
          genome="genome/{sample}.fa"
      output:
          "tmp/{sample}_NBARCout"
-     envmodules:
-         "NLR/clustalo/1.2.4"
      shell:
          "nhmmer {input.hmm} {input.genome} > {output}"
 #Convert nhmmer output into bed file#
@@ -224,8 +204,6 @@ rule NBARC_20flanking:
          genomefile="genome/{sample}.genomefile"
      output:
          "tmp/{sample}_NBARC.20kbflanking.bed"
-     envmodules:
-         "NLR/bedtools/2.30.0"  
      shell:
          "bedtools slop -b 20000 -s -i {input.bed} -g {input.genomefile} >  {output}"
 #---------------------------------------Now we have output from hmm, blast and NLR_annotator, combine them into one file--------------------------------------------
@@ -247,8 +225,6 @@ rule merge_all_20kbflanking:
          "tmp/{sample}_all20kbflanking.bed"
      output:
          "tmp/{sample}.all_20kbflanking_merged.bed"
-     envmodules:
-         "NLR/bedtools/2.30.0"
      shell:
          """bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk -v OFS='\\t' '{{print $1,$2,$3}}'|sort -k1,2 |uniq  > {output}"""               
 #Convert bedfile into fasta#
@@ -258,8 +234,6 @@ rule convert_20kbflankingbedfile_fasta:
          bed="tmp/{sample}.all_20kbflanking_merged.bed"
      output:
          "tmp/{sample}.all_20kbflanking_merged.fasta"
-     envmodules:
-         "NLR/bedtools/2.30.0"
      shell:
          "bedtools getfasta -fi {input.genome} -bed {input.bed} -fo {output}"
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
