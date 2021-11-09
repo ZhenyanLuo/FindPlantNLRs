@@ -22,7 +22,7 @@ hmmsearch:
 ## Manual
 
 ### Create a conda environment and install neccessary dependencies
-` conda create -n NLR -y
+``` conda create -n NLR -y
 conda activate NLR
 conda install -c bioconda snakemake=6.10.0 -y
 conda install python=3.6.5 -y
@@ -31,5 +31,6 @@ conda install -c bioconda samtools=1.9 -y
 conda install -c bioconda clustalo=1.2.4 -y
 conda install -c bioconda hmmer=3.3.2 -y
 conda install -c bioconda blast=2.7.1 -y
+```
 conda install -c bioconda seqkit=2.0.0 -y
 conda install -c conda-forge openjdk -y
