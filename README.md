@@ -44,3 +44,11 @@ conda install -c conda-forge openjdk -y
 [Install Interproscan.sh](https://www.ebi.ac.uk/interpro/download/)
 
 
+
+### Test Snakemake pipeline
+```
+Snakemake -s Get_NLR --core 10
+```
+
+
+
