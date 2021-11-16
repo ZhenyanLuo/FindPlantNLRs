@@ -272,7 +272,7 @@ rule braker:
 	shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
         shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Interproscan
-rule Interproscan:
+rule Interproscan_classification:
     input:
         fasta= "result/{sample}_augustus_aa.fasta",
         gff="result/{sample}_augustus.gff3"
@@ -283,13 +283,3 @@ rule Interproscan:
         shell("./interproscan/interproscan-5.50-84.0/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}")
         shell("bash NLR_classification.awk {output.interpro} {input.gff}")
         shell("touch {output.touch_file}")
-#Classify NLR
-#rule NLR_classification:
-#    input:
-#        interproscan="result/{sample}_interproscan.tsv",
-#        augustus="result/{sample}_augustus.gff3"
-#    output:
-#        "result/{sample}_NLRclassification.done"
-#    run:
-#        shell("bash NLR_classification.awk {input.interproscan} {input.augustus}")
-#	shell("touch {output}")
