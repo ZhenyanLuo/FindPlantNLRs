@@ -4,8 +4,7 @@
 #Adapted from Tamene Tolessa's script#
 #Put input genome in a folder named genome#
 genome="genome/"
-#SAMPLES = list(set([x.split(".")[0] for x in os.listdir(genome) if x.endswith("fa")]))
-SAMPLES = ["E_globulus_di"]
+SAMPLES = list(set([x.split(".")[0] for x in os.listdir(genome) if x.endswith("fa")]))
 import os
 path = 'tmp'
 if not os.path.exists(path):
