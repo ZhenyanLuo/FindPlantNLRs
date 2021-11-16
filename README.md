@@ -47,7 +47,7 @@ conda install -c conda-forge openjdk -y
 
 ### Test Snakemake pipeline
 ```
-Snakemake -s Get_NLR --core 10
+Snakemake -s Get_NLR --core 16
 ```
 
 
