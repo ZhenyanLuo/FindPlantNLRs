@@ -5,12 +5,16 @@ Steuernagel, B., Witek, K., Krattinger, S.G., Ramirez-Gonzalez, R.H., Schoonbeek
 
 BRAKER: https://github.com/Gaius-Augustus/BRAKER
 
-Interproscan:doi: 10.1093/bioinformatics/btu031
+Interproscan:doi: https://interproscan-docs.readthedocs.io/en/latest/UserDocs.html#obtaining-a-copy-of-interproscan
+10.1093/bioinformatics/btu031
 Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
-Blast:
+Blast: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
-hmmsearch:
+hmmsearch: http://hmmer.org/download.html
+
+
+
 
 
 
