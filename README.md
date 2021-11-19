@@ -55,8 +55,9 @@ Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, 
 
 ### Test Snakemake pipeline by using testing file in genome/ folder
 ```
-Snakemake -s Get_NLR --core 16
+Snakemake -s FindPlantNLRs --core 16
 ```
 
-## Output
+### Output
+Result/
 
