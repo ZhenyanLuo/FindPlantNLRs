@@ -58,5 +58,5 @@ Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, 
 Snakemake -s Get_NLR --core 16
 ```
 
-
+## Output
 
