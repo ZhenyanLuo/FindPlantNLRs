@@ -15,7 +15,7 @@ hmmsearch: http://hmmer.org/download.html
 
 
 
-Overview of the whole pipeline:
+### Overview of the whole pipeline:
 
 There should be a flowchart here.
 
