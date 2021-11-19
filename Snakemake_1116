@@ -27,7 +27,7 @@ rule chop_sequence:
      shell:
          "java -jar NLR-Annotator/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000"
 #Searching the chopped subsequences for pre-determined -associated motifs#
-rule search__motifs:
+rule search_motifs:
      input:
          "tmp/{sample}.choppedseq.fa"
      output:
@@ -35,15 +35,15 @@ rule search__motifs:
      shell:
          "java -jar NLR-Annotator/NLR-Parser3.jar -t 10 -y ../software/meme/bin/mast -x NLR-Annotator/meme.xml -i {input} -c {output}"
 #Generate the GFF format of  loci for the searched motifs#
-rule _annotator:
+rule run_NLR_annotator:
      input:
          "tmp/{sample}.parser.xml"
      output:
          "tmp/{sample}.parser.gff"
      shell:
          "java -jar NLR-Annotator/NLR-Annotator.jar -i {input} -g {output}"
-#Indexing reference sequence#
-rule index_ref_seq:
+#Indexing genome sequence#
+rule index_genome:
      input:
          "genome/{sample}.fa"
      output:
@@ -51,7 +51,7 @@ rule index_ref_seq:
      shell:
          "samtools faidx {input}"
 #Creat a file which have contig length information.
-rule convert_genome_format:
+rule get_contig_length:
      input:
          "genome/{sample}.fa.fai"
      output:
@@ -59,7 +59,7 @@ rule convert_genome_format:
      shell:
          "cut -d $'\t' -f1,2 {input} > {output}"
 #Convert format of parser.gff in order to incorporate with hmm output later 
-rule convert_paser:
+rule convert_paser_format:
       input:
           "tmp/{sample}.parser.gff"
       output:
@@ -67,7 +67,7 @@ rule convert_paser:
       shell:
           """awk -v OFS='\\t' '{{if ($7 == "+") {{print $1, $4, $5, $1, "forward", $7}} else if ($7 == "-") print $1, $4, $5, $1, "reverse", $7}}' {input} >{output}"""
 #Convert to 20kbflanking bed file with bedtools#
-rule paser_20kbflanking:
+rule get_paser_20kbflanking:
        input:
           bed="tmp/{sample}.parser.bed",
           genomefile="genome/{sample}.genomefile"
@@ -91,7 +91,7 @@ rule run_tblastn:
          shell("makeblastdb -in {input.genome} -dbtype nucl -parse_seqids -out {params}")
          shell("tblastn -query {input.ref} -db {params} -evalue 0.001 -outfmt 6 -out {output}")
 #Convert tblastn file into bed, and add two coloums for strand information#
-rule tblastn_to_bed:
+rule convert_tblastn_format:
      input:
          "tmp/{sample}.tblastnout.outfmt6"
      output:
@@ -99,7 +99,7 @@ rule tblastn_to_bed:
      shell:
          """awk -v OFS='\\t' '{{if ($10 - $9 > 0) {{print $2, $9, $10, $1, "forward", "+"}} else if ($10 - $9 < 0) print $2, $10, $9, $1, "reverse", "-"}}' {input} > {output}"""
 ##Generate 20kb flanking bed file for blast
-rule blast_20kb:
+rule get_blast_20kb:
      input:
          bed="tmp/{sample}.tblastnout.bed",
          genomefile="genome/{sample}.genomefile"
@@ -134,7 +134,7 @@ rule awk_convert:
          shell("""cat {input.TIR_out}|awk '/\Scores for complete hits/{{flag=1;next}}/\------ inclusion threshold ------/{{flag=0}}flag'|awk '(NR >2)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4, "reverse", "-"}}' > {output.TIRoutbed}""")
          shell("""cat {input.nonTIR_out}|awk '/\Scores for complete hits/{{flag=1;next}}/\------ inclusion threshold ------/{{flag=0}}flag'|awk '(NR >2)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4, "reverse", "-"}}' > {output.nonTIRoutbed}""")
 #convert both bed file into fasta file by using bedtools#
-rule bedtools:
+rule get_fasta_sequence:
      input:
          TIR_bed="tmp/{sample}.TIRout.bed",
          nonTIR_bed="tmp/{sample}.nonTIRout.bed",
@@ -159,7 +159,7 @@ rule awk:
          shell("""awk "/^>/ {{n++}} n>200 {{exit}} 1" {input.TIR} > {output.TIR_200}""")
          shell("cat {output.nonTIR_200} {output.TIR_200} > {output.NBARC400}")
 #Remove duplicated sequences#
-rule seqkit:
+rule run_seqkit:
      input:
          "tmp/{sample}_NBARC_400.fasta"
      output:
@@ -167,7 +167,7 @@ rule seqkit:
      shell:
          "seqkit rmdup -D duplicates -n {input} > {output}"
 #Generate alignment by using clustalo#
-rule clustalo:
+rule run_clustalo:
      input:
          "tmp/{sample}_NBARC.fasta"
      output:
@@ -175,7 +175,7 @@ rule clustalo:
      shell:
          "clustalo -i {input} -o {output} --outfmt=st"
 #Build a profile hmm from an alignment#
-rule hmmbuild:
+rule run_hmmbuild:
      input:
          "tmp/{sample}_NBARC.sto"
      output:
@@ -183,7 +183,7 @@ rule hmmbuild:
      shell:
          "hmmbuild -nucleic {output} {input}"
 #Use hmm profile built to search queries against genome#
-rule nhmmer:
+rule run_nhmmer:
      input:
          hmm="tmp/{sample}.hmm",
          genome="genome/{sample}.fa"
@@ -201,7 +201,7 @@ rule make_bed_hmmout:
      shell:
          """cat {input.NBARC}|awk '/\Scores for complete hits/{{flag=1;next}}/\------ inclusion threshold ------/{{flag=0}}flag'|awk '(NR >2)'|awk -v OFS='\\t' '{{if ($6 - $5 > 0) {{print $4, $5, $6, $4, "forward", "+"}} else if ($6 - $5 < 0) print $4, $6, $5, $4, "reverse", "-"}}' > {output}"""     
 #Get 20kb upstream and downstream# 
-rule NBARC_20flanking:
+rule get_NBARC_20kb:
      input:
          bed="tmp/{sample}_NBARC.bed",
          genomefile="genome/{sample}.genomefile"
