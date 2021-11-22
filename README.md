@@ -52,7 +52,7 @@ Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, 
 
 
 
-
+### Edit the FingPlantNLRs_config.yaml configure file by replacing 'path/to/your/genome' with your path to sample folder
 
 ### Test Snakemake pipeline by using testing file in genome/ folder
 ```
