@@ -25,6 +25,7 @@ There should be a flowchart here.
 
 ```
 git clone https://github.com/ZhenyanLuo/FindPlantNLRs
+cd FindPlantNLRs
 ```
 Some packages can be installed by using the environment.yml
 
