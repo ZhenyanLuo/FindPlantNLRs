@@ -114,8 +114,8 @@ rule get_blast_20kb:
 #Peri has already prepared hmm profiles which are named as EG_nonTIRhmm and EG_TIRhmm respectively. 
 rule find_TIR:
      input:
-         nonTIR="genome/EG_nonTIRhmm",
-         TIR="genome/EG_TIRhmm",
+         nonTIR="ref_db/EG_nonTIRhmm",
+         TIR="ref_db/EG_TIRhmm",
          genome="genome/{sample}.fa"
      output:
          TIR_out="tmp/{sample}.TIRout",
