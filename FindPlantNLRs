@@ -3,9 +3,10 @@
 #use bash conda_install.sh command to install neccessary modules#
 #Adapted from Tamene Tolessa's script#
 #Put input genome in a folder named genome#
-genome="genome/"
-SAMPLES = list(set([x.split(".")[0] for x in os.listdir(genome) if x.endswith("fa")]))
+
 import os
+configfile: "FingPlantNLRs_config.yaml"
+SAMPLES = list(set([x.split(".")[0] for x in os.listdir(config["genome_path"]) if x.endswith("fa")]))
 path = 'tmp'
 if not os.path.exists(path):
        os.mkdir(path)
