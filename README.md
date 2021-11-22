@@ -31,7 +31,8 @@ conda env create --name NLR -f environment.yml
 ```
 or install/update your environment with the environment.yml file
 ```
-conda env update --prefix ./env --file environment.yml --prune
+conda activate {your environment}
+conda env update --file environment.yml
 ```
 
 Other dependencies need to be install manually:
