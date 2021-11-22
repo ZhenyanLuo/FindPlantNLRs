@@ -23,6 +23,9 @@ There should be a flowchart here.
 
 ### Dependencies need to be installed before running this pipeline
 
+```
+git clone https://github.com/ZhenyanLuo/FindPlantNLRs
+```
 Some packages can be installed by using the environment.yml
 
 Create a new environment using the environment.yml
@@ -34,8 +37,7 @@ or install/update your environment with the environment.yml file
 conda activate {your environment}
 conda env update --file environment.yml
 ```
-
-Other dependencies need to be install manually:
+Other dependencies need to be install manually in the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
 Steuernagel, B., Witek, K., Krattinger, S.G., Ramirez-Gonzalez, R.H., Schoonbeek, H.J., Yu, G., Baggs, E., Witek, A.I., Yadav, I., Krasileva, K.V. and Jones, J.D., 2020. The NLR-Annotator tool enables annotation of the intracellular immune receptor repertoire. Plant Physiology, 183(2), pp.468-482.
