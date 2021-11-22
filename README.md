@@ -38,7 +38,7 @@ or install/update your environment with the environment.yml file
 conda activate {your environment}
 conda env update --file environment.yml
 ```
-Other dependencies need to be install manually in the FindPlantNLRs folder:
+Other dependencies need to be install manually to the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
 Use nlr_parser3 branch only
