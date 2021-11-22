@@ -53,7 +53,7 @@ Reference squence for tblastn and braker can be downloaded from supplementary fi
 https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
 Place the reference sequence in ref_db folder
 
-### Edit the FingPlantNLRs_config.yaml configure file by replacing 'path/to/your/genome' with your path to sample folder
+### Edit the FingPlantNLRs_config.yaml configure file by adding path to dependencies
 
 ### Test Snakemake pipeline by using testing file in genome/ folder
 ```
