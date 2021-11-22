@@ -41,19 +41,16 @@ conda env update --file environment.yml
 Other dependencies need to be install manually in the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
-Steuernagel, B., Witek, K., Krattinger, S.G., Ramirez-Gonzalez, R.H., Schoonbeek, H.J., Yu, G., Baggs, E., Witek, A.I., Yadav, I., Krasileva, K.V. and Jones, J.D., 2020. The NLR-Annotator tool enables annotation of the intracellular immune receptor repertoire. Plant Physiology, 183(2), pp.468-482.
+Use nlr_parser3 branch only
 
 BRAKER: https://github.com/Gaius-Augustus/BRAKER
 
 Interproscan: https://www.ebi.ac.uk/interpro/download/
 Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
-
-
-
-
-
-
+Reference squence for tblastn and braker can be downloaded from supplementary file S16 of RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family
+https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
+Place the reference sequence in ref_db folder
 
 ### Edit the FingPlantNLRs_config.yaml configure file by replacing 'path/to/your/genome' with your path to sample folder
 
