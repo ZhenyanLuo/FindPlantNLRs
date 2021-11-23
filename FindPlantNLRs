@@ -266,8 +266,8 @@ rule braker:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	shell("./{config[braker]}/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --prg=ph --epmode --species={params}")
-        shell("./{config[augustus]}/scripts/gtf2gff.pl < {config[braker]}/scripts/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
+	shell("python3 {config[braker]}/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --prg=ph --epmode --species={params}")
+        shell("python3 {config[augustus]}/scripts/gtf2gff.pl < {config[braker]}/scripts/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
         shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
 	shell("sed -e 's/\*//g' {config[braker]}/scripts/augustus.hints.aa >  {output.aa}")
         shell("rm -r {config[braker]}/scripts/GeneMark-EP {config[braker]}/scripts/GeneMark-ES")
@@ -280,6 +280,6 @@ rule Interproscan_classification:
         interpro="result/{sample}_interproscan.tsv",
         touch_file="result/{sample}_NLRclassification.done"
     run:
-        shell("./{config[interproscan]}/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}")
+        shell("bash {config[interproscan]}/interproscan.sh -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}")
         shell("bash NLR_classification.awk {output.interpro} {input.gff}")
         shell("touch {output.touch_file}")
