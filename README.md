@@ -74,3 +74,8 @@ Snakemake -s FindPlantNLRs --core 16
 Result/
 Now is ready to use this pipeline on your own samples.
 
+
+
+## How to cite this pipeline
+
+Please also remember to cite all dependencies used in this pipeline
