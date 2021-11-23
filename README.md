@@ -49,7 +49,7 @@ BRAKER: https://github.com/Gaius-Augustus/BRAKER
 Interproscan: https://www.ebi.ac.uk/interpro/download/
 Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
-Reference squence for tblastn and braker can be downloaded from supplementary file S1 of RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family
+Recommended reference database for tblastn and braker can be downloaded from supplementary file S1 of 'RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family'
 https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
 Place the reference sequence in ref_db folder and add absolute path of the reference in the FindPlantNLRs_config.yaml file
 
