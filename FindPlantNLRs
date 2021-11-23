@@ -83,15 +83,14 @@ rule get_paser_20kbflanking:
 #Build blastdb and dectect whether there are genes which cannot be captured by using -parser by using tblastn# remember to form a folder which include blastprotein#
 rule run_tblastn:
      input:
-         genome="genome/{sample}.fa",
-         ref="ref_db/journal.pbio.3001124.s013.fasta"
+         genome="genome/{sample}.fa"
      output:
          "tmp/{sample}.tblastnout.outfmt6"
      params:
          "tmp/{sample}.database"
      run:
          shell("makeblastdb -in {input.genome} -dbtype nucl -parse_seqids -out {params}")
-         shell("tblastn -query {input.ref} -db {params} -evalue 0.001 -outfmt 6 -out {output}")
+         shell("tblastn -query {config[ref]} -db {params} -evalue 0.001 -outfmt 6 -out {output}")
 #Convert tblastn file into bed, and add two coloums for strand information#
 rule convert_tblastn_format:
      input:
@@ -255,8 +254,7 @@ rule convert_format:
 #Set alignment tools as 
 rule braker:
     input:
-        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta",
-        ref="ref_db/journal.pbio.3001124.s013.fasta"
+        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta"
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
         hints_gtf="tmp/{sample}_braker.gtf",
@@ -266,8 +264,8 @@ rule braker:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	shell("python3 {config[braker]}/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --prg=ph --epmode --species={params}")
-        shell("python3 {config[augustus]}/scripts/gtf2gff.pl < {config[braker]}/scripts/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
+	shell("perl {config[braker]}/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
+        shell("perl {config[augustus]}/scripts/gtf2gff.pl < {config[braker]}/scripts/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
         shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
 	shell("sed -e 's/\*//g' {config[braker]}/scripts/augustus.hints.aa >  {output.aa}")
         shell("rm -r {config[braker]}/scripts/GeneMark-EP {config[braker]}/scripts/GeneMark-ES")
