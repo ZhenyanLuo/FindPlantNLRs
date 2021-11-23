@@ -53,24 +53,24 @@ BRAKER: https://github.com/Gaius-Augustus/BRAKER
 Interproscan: https://www.ebi.ac.uk/interpro/download/
 Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
-### Step2 Get reference database
+### Step 2: Get reference database
 
 Recommended reference database for tblastn and braker can be downloaded from supplementary file S1 of 'RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family'
 https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
 Place the reference sequence in ref_db folder and add absolute path of the reference in the FindPlantNLRs_config.yaml file
 
-### Step3 Edit the FindPlantNLRs_config.yaml configure file by adding path to dependencies
+### Step 3: Edit the FindPlantNLRs_config.yaml configure file by adding path to dependencies
 
 
 
-### Step 4 Place your samples in the 'genome' folder, make sure their file names only have one dot and ends with 'fasta' (e.g. E_globulus.fasta) 
+### Step 4: Place your samples in the 'genome' folder, make sure their file names only have one dot and ends with 'fasta' (e.g. E_globulus.fasta) 
 
-### Step 5 Test Snakemake pipeline by using testing file in genome/ folder
+### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
 ```
 Snakemake -s FindPlantNLRs --core 16
 ```
 
-### Step6 Check your output
+### Step 6: Check your output
 Result/
 Now is ready to use this pipeline on your own samples.
 
