@@ -6,6 +6,7 @@
 
 import os
 genome="genome/"
+configfile: "FindPlantNLRs.config"
 SAMPLES = list(set([x.split(".")[0] for x in os.listdir(genome) if x.endswith("fa")]))
 path = 'tmp'
 if not os.path.exists(path):
@@ -26,7 +27,7 @@ rule chop_sequence:
      output:
          "tmp/{sample}.choppedseq.fa"
      shell:
-         "java -jar NLR-Annotator/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000"
+         "java -jar {config[NLR-Annotator]}/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000"
 #Searching the chopped subsequences for pre-determined -associated motifs#
 rule search_motifs:
      input:
@@ -34,7 +35,7 @@ rule search_motifs:
      output:
          "tmp/{sample}.parser.xml"
      shell:
-         "java -jar NLR-Annotator/NLR-Parser3.jar -t 10 -y ../software/meme/bin/mast -x NLR-Annotator/meme.xml -i {input} -c {output}"
+         "java -jar {config[NLR-Annotator]}/NLR-Parser3.jar -t 10 -y {config[meme]} -x {config[meme_xml]} -i {input} -c {output}"
 #Generate the GFF format of  loci for the searched motifs#
 rule run_NLR_annotator:
      input:
@@ -42,7 +43,7 @@ rule run_NLR_annotator:
      output:
          "tmp/{sample}.parser.gff"
      shell:
-         "java -jar NLR-Annotator/NLR-Annotator.jar -i {input} -g {output}"
+         "java -jar {config[NLR-Annotator]}/NLR-Annotator.jar -i {input} -g {output}"
 #Indexing genome sequence#
 rule index_genome:
      input:
@@ -258,21 +259,18 @@ rule braker:
         ref="ref_db/journal.pbio.3001124.s013.fasta"
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-        hints_gtf="braker/{sample}_braker.gtf",
-#        gtf="braker/{sample}_augustus.gtf",
+        hints_gtf="tmp/{sample}_braker.gtf",
 	gff3="result/{sample}_augustus.gff3",
 	aa="result/{sample}_augustus_aa.fasta"
     params:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-#        shell("./braker_2.1.6/BRAKER/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --species={params} --gff3")
-	shell("./braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --prg=ph --epmode --species={params}")
-        shell("./augustus/3.3.3/scripts/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
-#	shell("mv braker/augustus.hints.gtf {output.gtf}")
-        shell("mv braker/braker.gtf {output.hints_gtf}")
-	shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
-        shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
+	shell("./{config[braker]}/scripts/braker.pl --cores=15 --genome={output.removed} --prot_seq={input.ref} --prg=ph --epmode --species={params}")
+        shell("./{config[augustus]}/scripts/gtf2gff.pl < {config[braker]}/scripts/augustus.hints.gtf --printExon --out={out.gff3} --gff3")
+        shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
+	shell("sed -e 's/\*//g' {config[braker]}/augustus.hints.aa >  {output.aa}")
+        shell("rm -r {config[braker]}/GeneMark-EP {config[braker]}/GeneMark-ES")
 #Interproscan
 rule Interproscan_classification:
     input:
