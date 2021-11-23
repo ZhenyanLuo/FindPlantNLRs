@@ -62,16 +62,22 @@ Place the reference sequence in ref_db folder and add absolute path of the refer
 ### Step 3: Edit the FindPlantNLRs_config.yaml configure file by adding path to dependencies
 #Path to NLR-Annotator
 NLR-Annotator: "{path/to/your}/NLR-Annotator"
+
 #Path to reference database
 ref: "{path/to/your/ref/fasta}"
+
 #Add path to meme
 meme: "{path/to/your/meme}/mast"
+
 #Add path to meme.xml from NLR-Annotator
 meme_xml: "{path/to/your}/meme.xml"
+
 #Add path to braker.pl
 braker: "{path/to/your}/BRAKER"
+
 #Add path to augustus script
 augustus: "{path/to/your/augustus}/scripts/gtf2gff.pl
+
 #Add path to Interproscan
 interproscan: "{path/to/your/interproscan}/interproscan.sh"
 
