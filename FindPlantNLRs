@@ -1,7 +1,5 @@
 #!/bin/bash -i
 #Necessary packages:-parser, -annotator, BRAKER, samtools, blast, interproscan, etc.#
-#use bash conda_install.sh command to install neccessary modules#
-#Adapted from Tamene Tolessa's script#
 #Put input genome in a folder named genome#
 
 import os
