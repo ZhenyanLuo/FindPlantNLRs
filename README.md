@@ -97,6 +97,7 @@ Snakemake -s FindPlantNLRs --core 16
 
 ### Step 6: Check your output
 Result/
+
 Now is ready to use this pipeline on your own samples.
 
 
