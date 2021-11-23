@@ -42,8 +42,9 @@ Other dependencies need to be install manually to the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
 Use nlr_parser3 branch only
+```
 git clone -b nlr_parser3 https://github.com/steuernb/NLR-Annotator
-
+```
 BRAKER: https://github.com/Gaius-Augustus/BRAKER
 
 Interproscan: https://www.ebi.ac.uk/interpro/download/
