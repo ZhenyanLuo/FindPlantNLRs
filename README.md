@@ -56,6 +56,10 @@ Place the reference sequence in ref_db folder and add absolute path of the refer
 
 ### Edit the FindPlantNLRs_config.yaml configure file by adding path to dependencies
 
+
+
+### Place your samples in the 'genome' folder, make sure their file names only have one dot and ends with 'fasta' (e.g. E_globulus.fasta) 
+
 ### Test Snakemake pipeline by using testing file in genome/ folder
 ```
 Snakemake -s FindPlantNLRs --core 16
