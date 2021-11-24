@@ -44,7 +44,7 @@ conda env update --file environment.yml
 Other dependencies need to be install manually to the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
-Use nlr_parser3 branch only
+**Use nlr_parser3 branch only**
 ```
 git clone -b nlr_parser3 https://github.com/steuernb/NLR-Annotator
 ```
@@ -57,7 +57,7 @@ Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, 
 
 Recommended reference database for tblastn and braker can be downloaded from supplementary file S1 of 'RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family'
 https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
-Place the reference sequence in ref_db folder and add absolute path of the reference in the FindPlantNLRs_config.yaml file
+Place the reference sequence in ref_db folder and add **absolute path** of the reference in the FindPlantNLRs_config.yaml file
 
 ### Step 3: Edit the FindPlantNLRs_config.yaml configure file by adding path to dependencies
 #Path to NLR-Annotator
