@@ -89,6 +89,11 @@ augustus: "{path/to/your/augustus}/scripts/gtf2gff.pl
 interproscan: "{path/to/your/interproscan}/interproscan.sh"
 
 ### Step 4: Place your samples in the 'genome' folder, make sure their file names only have one dot and ends with 'fa' (e.g. E_globulus.fa) 
+Chromosome 3 of E_grandis is a good choice, 
+
+
+
+Make sure sequence headers are short and unique. 
 
 ### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
 ```
