@@ -92,7 +92,7 @@ interproscan: "{path/to/your/interproscan}/interproscan.sh"
 
 ### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
 ```
-snakemake -s FindPlantNLRs --core 16
+snakemake -s FindPlantNLRs --cores 16
 ```
 
 ### Step 6: Check your output
