@@ -24,6 +24,8 @@ rule chop_sequence:
          "genome/{sample}.fa"
      output:
          "tmp/{sample}.choppedseq.fa"
+     conda:
+         "envs/java.yaml"
      shell:
          "java -jar {config[NLR-Annotator]}/ChopSequence.jar -i {input} -o {output} -l 20000 -p 5000"
 #Searching the chopped subsequences for pre-determined -associated motifs#
@@ -32,6 +34,8 @@ rule search_motifs:
          "tmp/{sample}.choppedseq.fa"
      output:
          "tmp/{sample}.parser.xml"
+     conda:
+         "envs/java.yaml"
      shell:
          "java -jar {config[NLR-Annotator]}/NLR-Parser3.jar -t 10 -y {config[meme]} -x {config[meme_xml]} -i {input} -c {output}"
 #Generate the GFF format of  loci for the searched motifs#
@@ -40,6 +44,8 @@ rule run_NLR_annotator:
          "tmp/{sample}.parser.xml"
      output:
          "tmp/{sample}.parser.gff"
+     conda:
+         "envs/java.yaml"
      shell:
          "java -jar {config[NLR-Annotator]}/NLR-Annotator.jar -i {input} -g {output}"
 #Indexing genome sequence#
@@ -275,7 +281,11 @@ rule Interproscan_classification:
     output:
         interpro="result/{sample}_interproscan.tsv",
         touch_file="result/{sample}_NLRclassification.done"
-    run:
-        shell("bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}")
-        shell("bash NLR_classification.awk {output.interpro} {input.gff}")
-        shell("touch {output.touch_file}")
+    conda:
+         "envs/java.yaml"
+   shell:
+        """
+	bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
+        bash NLR_classification.awk {output.interpro} {input.gff}
+        touch {output.touch_file}
+	"""
