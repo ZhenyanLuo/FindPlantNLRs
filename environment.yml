@@ -197,6 +197,7 @@ dependencies:
   - s3transfer=0.5.0=pyhd8ed1ab_0
   - samtools=1.9=h46bd0b3_0
   - scipy=1.5.3=py36h81d768a_1
+  - seqkit=2.0.0=h9ee0642_0
   - setuptools=58.0.4=py36h5fab9bb_2
   - simplejson=3.17.5=py36h8f6f2f9_0
   - six=1.16.0=pyh6c4a22f_0
