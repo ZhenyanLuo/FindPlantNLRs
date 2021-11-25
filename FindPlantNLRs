@@ -282,10 +282,10 @@ rule Interproscan_classification:
         interpro="result/{sample}_interproscan.tsv",
         touch_file="result/{sample}_NLRclassification.done"
     conda:
-         "envs/java.yaml"
+        "envs/java.yaml"
    shell:
         """
-	bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
+        bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
         bash NLR_classification.awk {output.interpro} {input.gff}
         touch {output.touch_file}
 	"""
