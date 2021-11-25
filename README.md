@@ -44,14 +44,13 @@ conda env update --file environment.yml
 Other dependencies need to be install manually to the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
-**Use nlr_parser3 branch only**
+**Use nlr_parser3 branch only and don't forget to download meme.xml**
 ```
 git clone -b nlr_parser3 https://github.com/steuernb/NLR-Annotator
 ```
 BRAKER: https://github.com/Gaius-Augustus/BRAKER
 
 Interproscan: https://www.ebi.ac.uk/interpro/download/
-Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
 ### Step 2: Get reference database
 
