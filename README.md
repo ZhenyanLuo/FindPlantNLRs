@@ -41,6 +41,12 @@ or install/update your environment with the environment.yml file
 conda activate {your environment}
 conda env update --file environment.yml
 ```
+```
+conda activate {your environment}
+wget https://anaconda.org/conda-forge/openjdk/11.0.9.1/download/linux-64/openjdk-11.0.9.1-h5cc2fde_1.tar.bz2
+conda install openjdk-11.0.9.1-h5cc2fde_1.tar.bz2
+rm openjdk-11.0.9.1-h5cc2fde_1.tar.bz2
+```
 Other dependencies need to be install manually to the FindPlantNLRs folder:
 
 NLR_annotator: https://github.com/steuernb/NLR-Annotator
