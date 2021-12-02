@@ -41,6 +41,7 @@ or install/update your environment with the environment.yml file
 conda activate {your environment}
 conda env update --file environment.yml
 ```
+Install open-jdk for NLR-Annotator and Interproscan
 ```
 conda activate {your environment}
 wget https://anaconda.org/conda-forge/openjdk/11.0.9.1/download/linux-64/openjdk-11.0.9.1-h5cc2fde_1.tar.bz2
