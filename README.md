@@ -58,8 +58,8 @@ git clone -b nlr_parser3 https://github.com/steuernb/NLR-Annotator
 BRAKER: https://github.com/Gaius-Augustus/BRAKER
 
 Interproscan: https://www.ebi.ac.uk/interpro/download/
-**Download and install meme-4.9.1 manually
-https://meme-suite.org/meme/meme-software/4.9.1/readme.html
+**Download and install meme-4.9.1 manually**
+meme-4.9.1: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
 
 ### Step 2: Get reference database
 
