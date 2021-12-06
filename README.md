@@ -110,8 +110,16 @@ Make sure sequence headers are short and unique
 snakemake -s FindPlantNLRs --cores 16
 ```
 
-### Step 6: Check your output
-Result/
+### Step 6: Check your main output
+tmp:
+tmp/E_grandis_chr3.blast.20kbflanking.bed
+tmp/E_grandis_chr3_NBARC.20kbflanking.bed
+tmp/E_grandis_chr3_parser.20kbflanking.bed
+tmp/E_grandis_chr3.all_20kbflanking_merged.fasta
+tmp/E_grandis_chr3.all_20kbflanking_merged_upper.fasta
+
+Result:
+
 
 Now is ready to use this pipeline on your own samples.
 
