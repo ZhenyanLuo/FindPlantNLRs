@@ -228,7 +228,8 @@ rule merge_all_20kbflanking:
      output:
          "tmp/{sample}.all_20kbflanking_merged.bed"
      shell:
-         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk -v OFS='\\t' '{{print $1,$2,$3}}'|sort -k1,2 |uniq  > {output}"
+#         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk -v OFS='\\t' '{{print $1,$2,$3}}'|sort -k1,2 |uniq  > {output}"
+         "
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
@@ -237,7 +238,8 @@ rule convert_20kbflankingbedfile_fasta:
      output:
          "tmp/{sample}.all_20kbflanking_merged.fasta"
      shell:
-         "bedtools getfasta -fi {input.genome} -bed {input.bed} -fo {output}"
+#         "bedtools getfasta -fi {input.genome} -bed {input.bed} -fo {output}"
+         "bedtools getfasta -fi {input.genome} -bed {input.bed} -s -fo {output}"	 
 #Convert all the sequences in 20kb flanking fasta into uppercase (not sure)#
 rule convert_format:
      input:
@@ -245,7 +247,8 @@ rule convert_format:
      output:
          "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
      shell:
-         """cat {input} | awk "/^>/ {{print(\$0)}}; /^[^>]/ {{print(toupper(\$0))}}" > {output}"""
+#         """cat {input} | awk "/^>/ {{print(\$0)}}; /^[^>]/ {{print(toupper(\$0))}}" > {output}"""
+         """cat {input} | awk "/^>/ {{print(\$0)}}; /^[^>]/ {{print(toupper(\$0))}} | sed -e 's/)//g'|sed -e 's/(//g' > {output}"""
 #RefPlant_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2
 #Remember to correct the path for braker.pl and replace braker_2.1.6 with the version you use
 #Remove sample species from config file of braker if you stopped once#
