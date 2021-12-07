@@ -4,7 +4,12 @@ channels:
   - bioconda
   - defaults
 dependencies:
-   - _libgcc_mutex=0.1=conda_forge
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=1_gnu
   - aioeasywebdav=2.4.0=py36h5fab9bb_1001
   - aiohttp=3.7.4.post0=py36h8f6f2f9_0
