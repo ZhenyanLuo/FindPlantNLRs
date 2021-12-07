@@ -104,10 +104,10 @@ interproscan: "{path/to/your/interproscan}/interproscan.sh"
 ### Step 4: Place your samples in the 'genome' folder, make sure their file names only have one dot and ends with 'fa' (e.g. E_globulus.fa) 
 Chromosome 3 of E_grandis is a good choice
 https://www.ncbi.nlm.nih.gov/nuccore/NC_052614.1
-Click **Send to**, then choose **complete record**, **file**, **fasta format**, **create file** save as NC_052614_1.fa, put this file into genome folder as test data
-
-
-
+Click **Send to**, then choose **complete record**, **file**, **fasta format**, **create file** save as E_grandis_chr3.fasta, put this file into genome folder as test data
+```
+cat E_grandis_chr3.fasta|cut -d' ' -f1 >E_grandis_chr3.fa
+```
 Make sure sequence headers are short, unique and only have numerics and characters.
 
 ### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
