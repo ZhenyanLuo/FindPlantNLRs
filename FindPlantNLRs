@@ -15,8 +15,8 @@ if not os.path.exists(result):
 rule all:
      input:
          expand('tmp/{sample}.all_20kbflanking_merged_upper.fasta', sample=SAMPLES),
-	  expand('result/{sample}_interproscan.tsv', sample=SAMPLES),
-	  expand('result/{sample}_augustus_aa.fasta', sample=SAMPLES),
+	 expand('result/{sample}_interproscan.tsv', sample=SAMPLES),
+	 expand('result/{sample}_augustus_aa.fasta', sample=SAMPLES),
          expand('result/{sample}_NLRclassification.done', sample=SAMPLES)
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
