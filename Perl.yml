@@ -1,0 +1,27 @@
+name: perl
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - binutils_impl_linux-64=2.36.1=h193b22a_2
+  - gcc=11.2.0=h702ea55_2
+  - gcc_bootstrap_linux-64=11.2.0=h6cd0796_2
+  - gcc_bootstrap_linux-s390x=11.2.0=h15f7010_2
+  - gcc_impl_linux-64=11.2.0=h82a94d6_11
+  - kernel-headers_linux-64=2.6.32=he073ed8_15
+  - ld_impl_linux-64=2.36.1=hea4e1c9_2
+  - libgcc-devel_linux-64=11.2.0=h0952999_11
+  - libgcc-ng=11.2.0=h1d223b6_11
+  - libgomp=11.2.0=h1d223b6_11
+  - libsanitizer=11.2.0=he4da1e4_11
+  - libstdcxx-ng=11.2.0=he4da1e4_11
+  - perl=5.32.1=1_h7f98852_perl5
+  - perl-archive-tar=2.18=1
+  - perl-exporter-tiny=0.042=1
+  - perl-list-moreutils=0.413=1
+  - perl-threaded=5.26.0=0
+  - sysroot_linux-64=2.12=he073ed8_15
+prefix: /home/zhenyan/anaconda3/envs/perl
