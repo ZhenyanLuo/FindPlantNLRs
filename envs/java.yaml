@@ -1,4 +1,0 @@
-channels:
-- anaconda
-dependencies:
-- openjdk=11.0.9.1
