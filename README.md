@@ -61,12 +61,9 @@ Interproscan: https://www.ebi.ac.uk/interpro/download/
 **Download and install meme-4.9.1 manually**
 meme-4.9.1: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
 
-**Make environment for FindPlantNLRs_annotation_classification**
+**Install Perl modules for BRAKER2**
 ```
-conda env create --name Perl -f Perl.yml 
-conda activate Perl
 cpan install Scalar::Util::Numeric Parallel::ForkManager File::HomeDir List::MoreUtils 
-conda install -c conda-forge openjdk=11.0.9.1 -y
 ```
 
 ### Step 2: Get reference database
@@ -117,12 +114,6 @@ Make sure sequence headers are short, unique and only have numerics and characte
 ```
 conda activate NLR
 snakemake -s FindPlantNLRs --cores 16
-```
-After this one done, you can run genome predict (Braker2) and classification (Interproscan)
-```
-conda deactivate NLR
-conda activate Perl
-snakemake -s FindPlantNLRs_annotation_classifcation --cores 16
 ```
 ### Step 6: Check your main output
 tmp:
