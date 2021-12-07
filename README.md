@@ -65,7 +65,8 @@ meme-4.9.1: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
 ```
 conda env create --name Perl -f Perl.yml 
 conda activate Perl
-cpanm Scalar::Util::Numeric Parallel::ForkManager File::HomeDir List::MoreUtils 
+cpan install Scalar::Util::Numeric Parallel::ForkManager File::HomeDir List::MoreUtils 
+conda install -c conda-forge openjdk=11.0.9.1 -y
 ```
 
 ### Step 2: Get reference database
