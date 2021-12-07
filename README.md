@@ -61,7 +61,7 @@ Interproscan: https://www.ebi.ac.uk/interpro/download/
 **Download and install meme-4.9.1 manually**
 meme-4.9.1: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
 
-**Make environment for FindPlantNLRs_annotation_classification
+**Make environment for FindPlantNLRs_annotation_classification**
 ```
 conda env create --name Perl -f Perl.yml 
 conda activate Perl
