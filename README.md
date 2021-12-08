@@ -13,6 +13,10 @@ Blast: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_
 
 hmmsearch: http://hmmer.org/download.html
 
+Meme: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
+
+BRAKER2: https://github.com/Gaius-Augustus/BRAKER
+
 
 
 ## Overview of the whole pipeline:
