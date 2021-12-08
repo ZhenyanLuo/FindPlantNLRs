@@ -136,6 +136,43 @@ tmp/E_grandis_chr3.all_20kbflanking_merged_upper.fasta
 
 Result:
 
+result/E_grandis_chr3_augustus_aa.fasta.tsv
+
+result/E_grandis_chr3_augustus.gff3
+
+result/E_grandis_chr3_BNL.list
+
+result/E_grandis_chr3_BNL.gff3
+
+result/E_grandis_chr3_CNL.list
+
+result/E_grandis_chr3_CNL.gff3
+
+result/E_grandis_chr3_JNL.list
+
+result/E_grandis_chr3_JNL.gff3
+
+result/E_grandis_chr3_NBARC.list
+
+result/E_grandis_chr3_NBARC.gff3
+
+result/E_grandis_chr3_NLR.list
+
+result/E_grandis_chr3_NLR.gff3
+
+result/E_grandis_chr3_RNL.list
+
+result/E_grandis_chr3_RNL.gff3
+
+result/E_grandis_chr3_RxNL.list
+
+result/E_grandis_chr3_RxNL.gff3
+
+result/E_grandis_chr3_TNL.list
+
+result/E_grandis_chr3_TNL.gff3
+
+result/E_grandis_chr3_NLRclassification.done
 
 Now is ready to use this pipeline on your own samples.
 
