@@ -1,5 +1,5 @@
-## What is FindPlantNLRs
-
+## About FindPlantNLRs
+We developed a comprehensive pipeline for annotating predicted NLR genes from a non-masked genome fasta file input. We combine loci identified using (1) NLR-annotator software (Steuernagel et al. 2020) with (2) a basic local alignment search tool (tblastn) (Altschul et al. 1990) using recently compiled and functionally validated NLR amino acid sequences and (3) a nucleotide iterative Hidden Markov Model (HMM) (Eddy 2010) to locate NBARC domains in genomes (Thrimawithana et al. 2019; Christie et al. 2016). While the pipeline was developed to seek NLR genes within Myrtaceae genomes, the supplied NBARC HMMs are suitable for any plant genome search due to the iterative step that builds a         unique species-specific HMM combined with the use of two other steps that incorporate broader models. The unmasked loci identified through these methods, and including 20 kb flanking regions, are then annotated with Braker2 software (Hoff et al. 2019) using protein hints from experimentally validated resistance genes (Kourelis et al. 2021). Annotated amino acid fasta files are screened for domains using Interproscan (Jones et al. 2014) and the predicted coding and amino acid sequences containing both NB-ARC and LRR domains are located back to scaffolds/chromosomes and  extracted in fasta and gff3 format. The complete described protocol including software versions, dependencies, HMMs and additional scripts are available here, 
 
 
 ## Overview of the whole pipeline:
