@@ -180,6 +180,8 @@ result/E_grandis_chr3_NLRclassification.done
 Now is ready to use this pipeline on your own samples.
 
 
+## Contributor
+Tamene Tolessa, Peri Tobias, Benjamin Schwessinger, Zhenyan Luo
 
 ## How to cite this pipeline
 
