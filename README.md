@@ -1,3 +1,14 @@
+## What is FindPlantNLRs
+
+
+
+## Overview of the whole pipeline:
+
+
+
+
+
+
 ## Dependencies
 
 NLR_annotator: https://doi.org/10.1104/pp.19.01273
@@ -270,10 +281,6 @@ dependencies:
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.5.0=ha95c52a_0
 ```
-
-## Overview of the whole pipeline:
-
-There should be a flowchart here.
 
 
 
