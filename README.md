@@ -1,5 +1,5 @@
 ## About FindPlantNLRs
-We developed a comprehensive pipeline for annotating predicted NLR genes from a non-masked genome fasta file input. We identify loci using NLR-annotator software (Steuernagel et al. 2020), tblastn (Altschul et al. 1990) and Hidden Markov Model (HMM) (Eddy 2010). The unmasked loci identified through these methods, and including 20 kb flanking regions, are then annotated with Braker2 software (Hoff et al. 2019) using experimentally validated resistance genes as reference (Kourelis et al. 2021). Annotated amino acid fasta files are screened for domains using Interproscan (Jones et al. 2014) and the predicted coding and amino acid sequences containing both NB-ARC and LRR domains are located back to scaffolds/chromosomes and extracted in fasta and gff3 format.
+We developed a comprehensive pipeline for annotating predicted NLR genes from a non-masked genome fasta file input. We identify loci using NLR-annotator software (Steuernagel _et al_. 2020), tblastn (Altschul _et al_. 1990) and Hidden Markov Model (HMM) (Eddy 2010). The unmasked loci identified through these methods, and including 20 kb flanking regions, are then annotated with Braker2 software (Hoff _et al_. 2019) using experimentally validated resistance genes as reference (Kourelis _et al_. 2021). Annotated amino acid fasta files are screened for domains using Interproscan (Jones _et al_. 2014) and the predicted coding and amino acid sequences containing both NB-ARC and LRR domains are located back to scaffolds/chromosomes and extracted in fasta and gff3 format.
 
 ## Overview of the whole pipeline:
 
@@ -13,10 +13,9 @@ We developed a comprehensive pipeline for annotating predicted NLR genes from a 
 NLR_annotator: https://doi.org/10.1104/pp.19.01273
 Steuernagel, B., Witek, K., Krattinger, S.G., Ramirez-Gonzalez, R.H., Schoonbeek, H.J., Yu, G., Baggs, E., Witek, A.I., Yadav, I., Krasileva, K.V. and Jones, J.D., 2020. The NLR-Annotator tool enables annotation of the intracellular immune receptor repertoire. Plant Physiology, 183(2), pp.468-482.
 
-BRAKER: https://github.com/Gaius-Augustus/BRAKER
+BRAKER2: https://github.com/Gaius-Augustus/BRAKER
 
-Interproscan:doi: https://interproscan-docs.readthedocs.io/en/latest/UserDocs.html#obtaining-a-copy-of-interproscan
-10.1093/bioinformatics/btu031
+Interproscan: https://interproscan-docs.readthedocs.io/en/latest/UserDocs.html#obtaining-a-copy-of-interproscan
 Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
 Blast: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
