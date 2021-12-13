@@ -392,7 +392,7 @@ snakemake -s FindPlantNLRs --cores 16
 
 ### tmp:
 
-Three bed files cover identified loci from tblastn, hmm search and NLR-Annotator:
+#### Three bed files cover identified loci from tblastn, hmm search and NLR-Annotator:
 
 tmp/E_grandis_chr3.blast.20kbflanking.bed
 
@@ -400,7 +400,7 @@ tmp/E_grandis_chr3_NBARC.20kbflanking.bed
 
 tmp/E_grandis_chr3_parser.20kbflanking.bed
 
-A merged bed file and corresponding fasta file: 
+#### A merged bed file and corresponding fasta file: 
 
 tmp/E_grandis_chr3.all_20kbflanking_merged.fasta
 
@@ -408,7 +408,7 @@ tmp/E_grandis_chr3.all_20kbflanking_merged_upper.fasta
 
 ### Result:
 
-Gene prediction result from Augustus:
+#### Gene prediction result from Augustus:
 
 result/E_grandis_chr3_augustus_aa.fasta
 
@@ -416,7 +416,7 @@ result/E_grandis_chr3_augustus_aa.fasta.tsv
 
 result/E_grandis_chr3_augustus.gff3
 
-Lists of different classes of R genes and corresponding bed files:
+#### Lists of different classes of R genes and corresponding bed files:
 
 result/E_grandis_chr3_BNL.list
 
@@ -450,11 +450,11 @@ result/E_grandis_chr3_TNL.list
 
 result/E_grandis_chr3_TNL.gff3
 
-A file indicates the completion of classification:
+#### A file indicates the completion of classification:
 
 result/E_grandis_chr3_NLRclassification.done
 
-Now is ready to use this pipeline on your own samples.
+#### Now is ready to use this pipeline on your own samples.
 
 
 ## Contributor
