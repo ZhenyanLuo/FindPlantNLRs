@@ -31,7 +31,7 @@ rule hmmsearch:
    shell:
         """
         hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {params} {input}
-        grep -v '#' {output.tblout} {output.seqid}| sort -k5,5n | cut -d ' ' -f1 | uniq > {output.seqid}
+        grep -v '#' {output.tblout} {output.seqid}| sort -k5,5n | cut -d ' ' -f1 |cut -d ':' -f2| uniq > {output.seqid}
         seqtk subseq {input} {output.seqid}|sed 's/*//g' > {output.fasta}
         """
 #Run pfam scan#
