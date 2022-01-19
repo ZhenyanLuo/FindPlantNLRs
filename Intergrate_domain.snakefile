@@ -32,7 +32,7 @@ rule hmmsearch:
         """
         hmmsearch -o {output.noali} --tblout {output.tblout} --noali --notextw {params} {input}
         grep -v '#' {output.tblout} {output.seqid}| sort -k5,5n | cut -d ' ' -f1 | uniq > {output.seqid}
-        seqtk subseq {input} |sed 's/*//g' > {output.fasta}
+        seqtk subseq {input} {output.seqid}|sed 's/*//g' > {output.fasta}
         """
 #Run pfam scan#
 rule pfam_scan:
