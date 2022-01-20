@@ -71,11 +71,13 @@ rule K-parse_pfamscan_NLR-fusions:
 rule filter:
      input:
          pfam="tmp/{sample}.pfamscan",
-         fasta="
+         fasta="tmp/{sample}.NB-ARC_hmmsearch_perseqhit_proteinseq.fa"
      output:
          pfamscan="pfam_parser/{sample}/{sample}_augustusprotein_pfamscan.txt",
          nlrid="pfam_parser/{sample}/{sample}_protein_nlrid_pfamscan.txt",
          nlrid_u="pfam_parser/{sample}/{sample}_protein_nlrid_geneid_uniq.txt",
+         nlr_u="NLR_IDs/{sample}_NLR_IDs/{sample}_NLR_uniqid_protein.fa",
+         nlrid_m="NLR_IDs/{sample}_NLR_IDs/{sample}_protein_nlrid_pfamid_multoccurrence",
      params:
          "pfam_parser/{sample}"
      shell:
@@ -84,8 +86,8 @@ rule filter:
 #test this line seperately#
          awk 'NR==FNR{{for (i=1;i<=NF;i++) a[$i];next}} FNR==1 || ($7 in a)' {params}/*_wordcloud_*.txt {output.pfamscan} | sort | uniq > {output.nlrid}
          cat {output.nlr_id} | cut -d ' ' -f1 | sort | uniq > {output.nlrid_u}
-         seqtk subseq ../${genomebase}.NB-ARC_hmmsearch_perseqhit_proteinseq.fa {output.nlrid_u} > ../../NLR_ID_proteins/${genomebase}_NLR_uniqid_protein.fa
-         awk '{{print $1 " "$6 " " $7}}' ./${genomebase}_NLR_IDs/${genomebase}_protein_nlrid_pfamscan.txt > ./${genomebase}_NLR_IDs/${genomebase}_protein_nlrid_pfamid_multoccurrence.txt
+         seqtk subseq {input.fasta} {output.nlrid_u} > {output.nlr_u}
+         awk '{{print $1 "\\t" $6 "\\t" $7}}' {output.nlrid} > {output.nlrid_m}
          cat ${genomebase}.NBLRR.aa | grep '^>' | sed 's/>Species basename//g' > ./${genomebase}_NLR_IDs/${genomebase}_NBLRR_geneid.txt
          cat ${genomebase}.NBTIRs.aa | grep '^>' | sed 's/>Species basename//g' > ./${genomebase}_NLR_IDs/${genomebase}_NBTIR_geneid.txt
          cat ${genomebase}.NBCoils.aa | grep '^>' | sed 's/>Species basename//g' > ./${genomebase}_NLR_IDs/${genomebase}_NBCoil_geneid.txt
