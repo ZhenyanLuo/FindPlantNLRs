@@ -265,7 +265,7 @@ rule braker:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
 	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
         shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
-        shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
+#        shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
 	shell("sed -e 's/\*//g' {config[braker]}/scripts/augustus.hints.aa >  {output.aa}")
         shell("rm -r {config[braker]}/scripts/GeneMark-EP {config[braker]}/scripts/GeneMark-ES")
 #Interproscan
