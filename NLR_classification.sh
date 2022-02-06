@@ -114,29 +114,6 @@ join TNL_temp_2 GFF3_temp | sort -k2,2 -n > TNL_temp_3
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' TNL_temp_3 > ${OUT_PREFIX}_TNL.gff3
 for files in TNL_temp_* ; do rm ${files} ; done
 
-#
-# Identify BNB
-#
-gawk 'BEGIN {FS="\t"} $5=="PF02892" {print $1}' $TSV_FILE | sort -k 1b,1 | uniq > BNB_temp_1
-join ${OUT_PREFIX}_NBARC.list BNB_temp_1 > ${OUT_PREFIX}_BNB.list
-gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_BNB.list | sort -k 1b,1 | uniq > BNB_temp_2
-join BNB_temp_2 GFF3_temp | sort -k2,2 -n > BNB_temp_3
-# Reformat rows to produce new gff3 file
-gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' BNB_temp_3 > ${OUT_PREFIX}_BNB.gff3
-for files in BNB_temp_* ; do rm ${files} ; done
-
-
-#
-# Identify BNL
-#
-gawk 'BEGIN {FS="\t"} $5=="PF02892" {print $1}' $TSV_FILE | sort -k 1b,1 | uniq > BNL_temp_1
-join ${OUT_PREFIX}_NLR.list BNL_temp_1 > ${OUT_PREFIX}_BNL.list
-gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_BNL.list | sort -k 1b,1 | uniq > BNL_temp_2
-join BNL_temp_2 GFF3_temp | sort -k2,2 -n > BNL_temp_3
-# Reformat rows to produce new gff3 file
-gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' BNL_temp_3 > ${OUT_PREFIX}_BNL.gff3
-for files in BNL_temp_* ; do rm ${files} ; done
-
 
 #
 # Identify CNB
