@@ -385,7 +385,7 @@ For your own data, make sure sequence headers are short, unique and only have nu
 ### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
 ```
 conda activate NLR
-snakemake -s FindPlantNLRs --cores 16
+snakemake -s FindPlantNLRs --cores 1
 ```
 ### Step 6: Check your main output
 
