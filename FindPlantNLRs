@@ -1,7 +1,6 @@
 #!/bin/bash -i
 #Necessary packages:-parser, -annotator, BRAKER, samtools, blast, interproscan, etc.#
 #Put input genome in a folder named genome#
-
 import os
 genome="genome/"
 configfile: "FindPlantNLRs.config"
@@ -14,11 +13,7 @@ if not os.path.exists(result):
        os.mkdir(result)
 rule all:
      input:
-         expand('tmp/{sample}.all_20kbflanking_merged_upper.fasta', sample=SAMPLES),
-	 expand('result/{sample}_augustus_aa.fasta', sample=SAMPLES),
-	 expand('result/{sample}_augustus_aa.fasta.tsv', sample=SAMPLES),
-         expand('result/{sample}_NLRclassification.done', sample=SAMPLES),
-	 expand('result/{sample}_ID.done', sample=SAMPLES)
+         expand('tmp/{sample}.all_20kbflanking_merged_upper.fasta', sample=SAMPLES)
 #Chopping the genome sequence into overlapping subsequences#
 rule chop_sequence:
      input:
@@ -120,8 +115,8 @@ rule find_TIR:
          TIR_out="tmp/{sample}.TIRout",
          nonTIR_out="tmp/{sample}.nonTIRout"
      run:
-         shell("nhmmer {input.nonTIR} {input.genome} > {output.nonTIR_out}")
-         shell("nhmmer {input.TIR} {input.genome} > {output.TIR_out}")
+         shell("nhmmer --dna {input.nonTIR} {input.genome} > {output.nonTIR_out}")
+         shell("nhmmer --dna {input.TIR} {input.genome} > {output.TIR_out}")
 #convert both nhmmer output into bed file by using awk script#
 rule awk_convert:
      input:
@@ -190,7 +185,7 @@ rule run_nhmmer:
      output:
          "tmp/{sample}_NBARCout"
      shell:
-         "nhmmer {input.hmm} {input.genome} > {output}"
+         "nhmmer --dna {input.hmm} {input.genome} > {output}"
 #Convert nhmmer output into bed file#
 #Required double-check#
 rule make_bed_hmmout:
@@ -248,54 +243,6 @@ rule convert_format:
          "tmp/{sample}.all_20kbflanking_merged_upper.fasta"
      shell:
          """cat {input} | awk "/^>/ {{print(\$0)}}; /^[^>]/ {{print(toupper(\$0))}}" > {output}"""
-#RefPlant_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2
-#Remember to correct the path for braker.pl and replace braker_2.1.6 with the version you use
-#Remove sample species from config file of braker if you stopped once#
-#Set alignment tools as 
-rule braker:
-    input:
-        raw="tmp/{sample}.all_20kbflanking_merged_upper.fasta"
-    output:
-        removed="tmp/{sample}_all_20kbflanking_removed.fasta",
-        hints_gtf="tmp/{sample}_braker.gtf",
-	gff3="result/{sample}_augustus.gff3",
-	aa="result/{sample}_augustus_aa.fasta"
-    params:
-        "{sample}"
-    run:
-        shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
-        shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
-#        shell("mv {config[braker]}/scripts/braker.gtf {output.hints_gtf}")
-	shell("sed -e 's/\*//g' {config[braker]}/scripts/augustus.hints.aa >  {output.aa}")
-        shell("rm -r {config[braker]}/scripts/GeneMark-EP {config[braker]}/scripts/GeneMark-ES")
-#Interproscan
-rule Interproscan_classification:
-    input:
-        fasta="result/{sample}_augustus_aa.fasta",
-        gff="result/{sample}_augustus.gff3"
-    output:
-        interpro="result/{sample}_augustus_aa.fasta.tsv",
-        touch_file="result/{sample}_NLRclassification.done"
-    shell:
-        """
-        bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
-        bash NLR_classification.sh {output.interpro} {input.gff}
-        touch {output.touch_file}
-	"""
-#Find Integrate domain
-rule Integrate_domain:
-	input:
-		"result/{sample}_interproscan.tsv"
-	output:
-		"result/{sample}_ID.done"
-	params:
-		"{sample}"
-	shell:	
-		"""
-		bash get_integrated_domains.sh {params} NLR
-		touch {output}
-		"""
 		
 
 
