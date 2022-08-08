@@ -15,6 +15,7 @@ rule all:
      input:
        expand('tmp/{sample}_all_20kbflanking_removed.fasta', sample=SAMPLES),
        expand('result/{sample}_augustus_aa.fasta', sample=SAMPLES),
+       expand('result/{sample}.codingseq', sample=SAMPLES),
        expand('result/{sample}_augustus_aa.fasta.tsv', sample=SAMPLES),
        expand('result/{sample}_NLRclassification.done', sample=SAMPLES),
        expand('result/{sample}_ID.done', sample=SAMPLES)
@@ -28,16 +29,17 @@ rule braker:
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
         hints_gtf="tmp/{sample}_braker.gtf",
-	      gff3="result/{sample}_augustus.gff3",
-	      aa="result/{sample}_augustus_aa.fasta"
+	codingseq="result/{sample}.codingseq",
+	gff3="result/{sample}_augustus.gff3",
+	aa="result/{sample}_augustus_aa.fasta"
     params:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	      shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
+	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
         shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
-#       shell("mv braker/braker.gtf {output.hints_gtf}")
-	      shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
+	shell("cp braker/augustus.hints.codingseq {output.codingseq}")
+	shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
         shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Interproscan
 rule Interproscan_classification:
@@ -55,14 +57,14 @@ rule Interproscan_classification:
       	"""
 #Find Integrate domain
 rule Integrate_domain:
-	  input:
-		  "result/{sample}_interproscan.tsv"
-	  output:
-		   "result/{sample}_ID.done"
-	  params:
-		   "{sample}"
-	  shell:	
-		    """
-		    bash get_integrated_domains.sh {params} NLR
-		    touch {output}
-		    """
+    input:
+	"result/{sample}_interproscan.tsv"
+    output:
+    	"result/{sample}_ID.done"
+    params:
+	"{sample}"
+    shell:	
+	"""
+	bash get_integrated_domains.sh {params} NLR
+	touch {output}
+	"""
