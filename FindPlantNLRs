@@ -216,7 +216,7 @@ rule combine_all_bed:
      output:
          "tmp/{sample}_all20kbflanking.bed"
      shell:
-         "cat {input.hmm} {input.annotator} {input.blast}|sort -k1,1 -k2,2n > {output}"
+         """cat {input.hmm} {input.annotator} {input.blast}|awk -v  OFS='\\t' '{{print $1,$2,$3}}'  |sort -k1,1 -k2,2n > {output}"""
 #Merge the bed file now#
 rule merge_all_20kbflanking:
      input:
@@ -225,7 +225,8 @@ rule merge_all_20kbflanking:
          "tmp/{sample}.all_20kbflanking_merged.bed"
      shell:
 #         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk -v OFS='\\t' '{{print $1,$2,$3}}'|sort -k1,2 |uniq  > {output}"
-         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} |sort -k1,2 |uniq  > {output}"
+#         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} |sort -k1,2 |uniq  > {output}"
+	"bedtools merge -i {input} > {output}"
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
