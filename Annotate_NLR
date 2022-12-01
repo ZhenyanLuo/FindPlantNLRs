@@ -36,7 +36,7 @@ rule braker:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --prg=ph --epmode --species={params}")
+	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --epmode ")
         shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
 	shell("cp braker/augustus.hints.codingseq {output.codingseq}")
 	shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
