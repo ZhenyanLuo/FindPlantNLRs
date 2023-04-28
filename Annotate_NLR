@@ -45,14 +45,15 @@ rule braker:
 rule Interproscan_classification:
     input:
         fasta="result/{sample}_augustus_aa.fasta",
-        gff="result/{sample}_augustus.gff3"
+        gff="result/{sample}_augustus.gff3",
+	genome="genome/{sample}.fa"
     output:
         interpro="result/{sample}_augustus_aa.fasta.tsv",
         touch_file="result/{sample}_NLRclassification.done"
     shell:
         """
         bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
-        bash NLR_classification.sh {output.interpro} {input.gff}
+        bash NLR_classification.sh {output.interpro} {input.gff} {input.fasta} {input.genome}
         touch {output.touch_file}
       	"""
 #Find Integrate domain
