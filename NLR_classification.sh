@@ -2,10 +2,13 @@
 
 #From a bash script from https://github.com/peritob/Myrtaceae_NLR_workflow
 
-#Use for NLR classification step in the snakemake pipeline
-#This script can be used individually by running 'bash run_classification.sh {interproscan.tsv} {augustus.gff3}'
+#Use for NLR classification step in the snakemake pipeline, need seqtk and gff3tools, can be installed with conda inastall -c bioconda seqtk -y and pip install gff3tool
+#gff3tools is from https://github.com/NAL-i5K/GFF3toolkit
+#This script can be used individually by running 'bash run_classification.sh {interproscan.tsv} {augustus.gff3} {corresponding fasta file}'
 TSV_FILE=$1
 GFF3_FILE=$2
+PROTEIN_FILE=$3
+GENOME_FILE=$4
 
 # try to get a sensible prefix for the output files
 OUT_PREFIX=${TSV_FILE%.tsv}
@@ -14,6 +17,8 @@ OUT_PREFIX=${OUT_PREFIX%_augustus_aa}
 
 echo tsv file: $TSV_FILE
 echo gff3 file: $GFF3_FILE
+echo protein file: $PROTEIN_FILE
+echo genome file: $GENOME_FILE
 echo prefix: $OUT_PREFIX
 
 # Build a temporary working file which is the gff3 file but with two columns inserted on the left.
@@ -30,6 +35,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_NBARC.list | sort -k 1b,1 |
 join NBARC_temp_1 GFF3_temp | sort -k2,2 -n > NBARC_temp_2
 # Reformat rows to produce new gff3 file.  This outputs the annotated gene co-ordinates and orientation based on the original genome using braker outputs.
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' NBARC_temp_2 > ${OUT_PREFIX}_NBARC.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_NBARC.list >${OUT_PREFIX}_NBARC.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_NBARC.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_NBARC
 for files in NBARC_temp_*; do rm ${files}; done
 
 
@@ -42,6 +49,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_NLR.list | sort -k 1b,1 | u
 join NLR_temp_2 GFF3_temp | sort -k2,2 -n > NLR_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' NLR_temp_3 > ${OUT_PREFIX}_NLR.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_NLR.list >${OUT_PREFIX}_NLR.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_NLR.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_NLR
 for files in NLR_temp_*; do rm ${files}; done
 
 
@@ -54,6 +63,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_RNB.list | sort -k 1b,1 | u
 join RNB_temp_2 GFF3_temp | sort -k2,2 -n > RNB_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' RNB_temp_3 > ${OUT_PREFIX}_RNB.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_RNB.list >${OUT_PREFIX}_RNB.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_RNB.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_RNB
 for files in RNB_temp_* ; do rm ${files} ; done
 
 #
@@ -65,6 +76,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_RNL.list | sort -k 1b,1 | u
 join RNL_temp_2 GFF3_temp | sort -k2,2 -n > RNL_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' RNL_temp_3 > ${OUT_PREFIX}_RNL.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_RNL.list >${OUT_PREFIX}_RNL.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_RNL.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_RNL
 for files in RNL_temp_* ; do rm ${files} ; done
 
 
@@ -77,6 +90,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_RxNB.list | sort -k 1b,1 | 
 join RxNB_temp_2 GFF3_temp | sort -k2,2 -n > RxNB_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' RxNB_temp_3 > ${OUT_PREFIX}_RxNB.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_RxNB.list >${OUT_PREFIX}_RxNB.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_RxNB.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_RxNB
 for files in RxNB_temp_* ; do rm ${files} ; done
 
 
@@ -89,6 +104,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_RxNL.list | sort -k 1b,1 | 
 join RxNL_temp_2 GFF3_temp | sort -k2,2 -n > RxNL_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' RxNL_temp_3 > ${OUT_PREFIX}_RxNL.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_RxNL.list >${OUT_PREFIX}_RxNL.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_RxNL.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_RxNL
 for files in RxNL_temp_* ; do rm ${files} ; done
 
 #
@@ -100,6 +117,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_TNB.list | sort -k 1b,1 | u
 join TNB_temp_2 GFF3_temp | sort -k2,2 -n > TNB_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' TNB_temp_3 > ${OUT_PREFIX}_TNB.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_TNB.list >${OUT_PREFIX}_TNB.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_TNB.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_TNB
 for files in TNB_temp_* ; do rm ${files} ; done
 
 
@@ -112,6 +131,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_TNL.list | sort -k 1b,1 | u
 join TNL_temp_2 GFF3_temp | sort -k2,2 -n > TNL_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' TNL_temp_3 > ${OUT_PREFIX}_TNL.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_TNL.list >${OUT_PREFIX}_TNL.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_TNL.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_TNL
 for files in TNL_temp_* ; do rm ${files} ; done
 
 
@@ -129,6 +150,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_CNB.list | sort -k 1b,1 | u
 join CNB_temp_3 GFF3_temp | sort -k2,2 -n > CNB_temp_4
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' CNB_temp_4 > ${OUT_PREFIX}_CNB.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_CNB.list >${OUT_PREFIX}_CNB.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_CNB.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_CNB
 for files in CNB_temp_* ; do rm ${files} ; done
 
 
@@ -142,6 +165,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_CNL.list | sort -k 1b,1 | u
 join CNL_temp_2 GFF3_temp | sort -k2,2 -n > CNL_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' CNL_temp_3 > ${OUT_PREFIX}_CNL.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_CNL.list >${OUT_PREFIX}_CNL.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_CNL.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_CNL
 for files in CNL_temp_* ; do rm ${files} ; done
 
 
@@ -153,6 +178,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_JNB.list | sort -k 1b,1 | u
 join JNB_temp_2 GFF3_temp | sort -k2,2 -n > JNB_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print  a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' JNB_temp_3 > ${OUT_PREFIX}_JNB.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_JNB.list >${OUT_PREFIX}_JNB.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_JNB.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_JNB
 for files in JNB_temp_* ; do rm ${files} ; done
 
 #
@@ -164,6 +191,8 @@ gawk '{split($1, a, "."); print a[1]}' ${OUT_PREFIX}_JNL.list | sort -k 1b,1 | u
 join JNL_temp_2 GFF3_temp | sort -k2,2 -n > JNL_temp_3
 # Reformat rows to produce new gff3 file
 gawk 'BEGIN {OFS="\t"} {split($3, a, "[:\\-+]"); print a[1], $4, $5, (a[2]+$6), (a[2]+$7), $8, $9, $10, $11}' JNL_temp_3 > ${OUT_PREFIX}_JNL.gff3
+seqtk subseq ${PROTEIN_FILE} ${OUT_PREFIX}_JNL.list >${OUT_PREFIX}_JNL.fasta
+gff3_to_fasta -g ${OUT_PREFIX}_JNL.gff3 -f ${GENOME_FILE} -st cds -noQC -d simple -o ${OUT_PREFIX}_JNL
 for files in JNL_temp_* ; do rm ${files} ; done
 
 rm GFF3_temp
