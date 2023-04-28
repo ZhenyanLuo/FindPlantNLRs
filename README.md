@@ -83,6 +83,7 @@ dependencies:
   - readline=8.1=h46c0cb4_0
   - samtools=1.11=h6270b1f_0
   - seqkit=2.3.1=h9ee0642_0
+  - seqtk=1.3=h5bf99c6_3
   - setuptools=65.5.1=pyhd8ed1ab_0
   - sqlite=3.37.0=h9cd32fc_0
   - tk=8.6.12=h27826a3_0
@@ -101,6 +102,7 @@ dependencies:
     - docutils==0.19
     - dpath==2.1.1
     - fastjsonschema==2.16.2
+    - gff3tool==2.1.0
     - gitdb==4.0.10
     - gitpython==3.1.29
     - idna==3.4
