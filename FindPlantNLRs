@@ -226,7 +226,7 @@ rule merge_all_20kbflanking:
      shell:
 #         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input}|awk -v OFS='\\t' '{{print $1,$2,$3}}'|sort -k1,2 |uniq  > {output}"
 #         "bedtools merge -s -d 1 -c 1,5,6 -o distinct,distinct,distinct, -i {input} |sort -k1,2 |uniq  > {output}"
-	"bedtools merge -i {input} > {output}"
+         "bedtools merge -i {input} > {output}"
 #Convert bedfile into fasta#
 rule convert_20kbflankingbedfile_fasta:
      input:
