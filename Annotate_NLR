@@ -55,13 +55,13 @@ rule Interproscan_classification:
         bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
         bash NLR_classification.sh {output.interpro} {input.gff} {input.fasta} {input.genome}
         touch {output.touch_file}
-      	"""
+        """
 #Find Integrate domain
 rule Integrate_domain:
     input:
 	"result/{sample}_interproscan.tsv"
     output:
-    	"result/{sample}_ID.done"
+        "result/{sample}_ID.done"
     params:
         "{sample}"
     shell:
