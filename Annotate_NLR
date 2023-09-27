@@ -63,9 +63,9 @@ rule Integrate_domain:
     output:
     	"result/{sample}_ID.done"
     params:
-	"{sample}"
-    shell:	
-	"""
-	bash get_integrated_domains.sh {params} NLR
-	touch {output}
-	"""
+        "{sample}"
+    shell:
+        """
+        bash get_integrated_domains.sh {params} NLR
+        touch {output}
+        """
