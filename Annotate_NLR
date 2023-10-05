@@ -29,24 +29,24 @@ rule braker:
     output:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
         hints_gtf="tmp/{sample}_braker.gtf",
-	codingseq="result/{sample}.codingseq",
-	gff3="result/{sample}_augustus.gff3",
-	aa="result/{sample}_augustus_aa.fasta"
+        codingseq="result/{sample}.codingseq",
+        gff3="result/{sample}_augustus.gff3",
+        aa="result/{sample}_augustus_aa.fasta"
     params:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-	shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --epmode ")
+        shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --epmode ")
         shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
-	shell("cp braker/augustus.hints.codingseq {output.codingseq}")
-	shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
+        shell("cp braker/augustus.hints.codingseq {output.codingseq}")
+        shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
         shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Interproscan
 rule Interproscan_classification:
     input:
         fasta="result/{sample}_augustus_aa.fasta",
         gff="result/{sample}_augustus.gff3",
-	genome="genome/{sample}.fa"
+        genome="genome/{sample}.fa"
     output:
         interpro="result/{sample}_augustus_aa.fasta.tsv",
         touch_file="result/{sample}_NLRclassification.done"
@@ -59,7 +59,7 @@ rule Interproscan_classification:
 #Find Integrate domain
 rule Integrate_domain:
     input:
-	"result/{sample}_interproscan.tsv"
+        "result/{sample}_augustus_aa.fasta.tsv"
     output:
         "result/{sample}_ID.done"
     params:
