@@ -84,7 +84,7 @@ rule run_tblastn:
          "tmp/{sample}.database"
      run:
          shell("makeblastdb -in {input.genome} -dbtype nucl -parse_seqids -out {params}")
-         shell("tblastn -query {config[ref]} -db {params} -evalue 0.001 -outfmt 6 -out {output}")
+         shell("tblastn -query {config[ref]} -db {params} -num_threads {config[blast_threads]} -evalue 0.001 -outfmt 6 -out {output}")
 #Convert tblastn file into bed, and add two coloums for strand information#
 rule convert_tblastn_format:
      input:
