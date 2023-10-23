@@ -47,7 +47,7 @@ https://www.ebi.ac.uk/interpro/download/InterProScan/
 ### Step 4: Create the docker image 
 Download the dockerfile from this branch, run
 ```
-docker build -t findplantsnlr dockerfile
+docker build -t findplantsnlr:latest -f dockerfile .
 ```
 Once the docker image has been created suscessfully, you can run the following command to bind your interproscan:
 ```
