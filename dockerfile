@@ -6,7 +6,7 @@ RUN cd /home && \
     git clone https://github.com/ZhenyanLuo/FindPlantNLRs.git --branch docker_version
 RUN source /opt/conda/bin/deactivate FindPlantNLRs
 RUN source /opt/conda/bin/activate Annotate_NLR && mamba install braker3 -y && mamba install openjdk=11.0.13 -y && mamba install gxx_linux-64 -y
-RUN apt-get install gawk
+RUN apt-get install gawk -y
 RUN pip3 install gff3tool
 COPY gm_key_64.gz /root/gm_key_64.gz
 COPY gmes_linux_64.tar.gz /root/
