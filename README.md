@@ -136,7 +136,8 @@ dependencies:
     - zipp==3.11.0
 ```
 
-## Install with docker, see ![docker verion branch](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
+## Install with docker
+See (https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
 Please have gm_key_64.gz, gmes_linux_64.tar.gz, journal.pbio.3001124.s013 being prepared in the same directory before running the following command
 
 Build image from yanolo/findplantsnlr
