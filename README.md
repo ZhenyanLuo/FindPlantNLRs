@@ -136,6 +136,17 @@ dependencies:
     - zipp==3.11.0
 ```
 
+## Install with docker, see ![docker verion branch](https://github.com/ZhenyanLuo/FindPlantNLRs/tree/docker_version)
+Please have gm_key_64.gz, gmes_linux_64.tar.gz, journal.pbio.3001124.s013 being prepared in the same directory before running the following command
+
+Build image from yanolo/findplantsnlr
+```
+docker build -t findplantnlrs -f dockerfile
+```
+Run container from the image, replace $PWD with the path of your input genome to mount your input folder to /home/FindPlantNLRs/genome
+```
+docker run -v $PWD:/home/FindPlantNLRs/genome -v ${interproscan}:/home/interproscan -fi findplantnlrs bash 
+```
 
 
 
@@ -241,7 +252,7 @@ For your own data, make sure sequence headers are short, unique and only have nu
 ### Step 5: Test Snakemake pipeline by using testing file in genome/ folder
 ```
 conda activate NLR
-snakemake -s FindPlantNLRs --cores 16
+snakemake -s FindPlantNLRs --cores 16 --wait-for-files
 snakemake -s Annotate_NLR --cores 1 --wait-for-files
 ```
 ### Step 6: Check your main output
