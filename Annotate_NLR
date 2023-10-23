@@ -16,6 +16,7 @@ rule all:
        expand('tmp/{sample}_all_20kbflanking_removed.fasta', sample=SAMPLES),
        expand('result/{sample}_braker_aa.fasta', sample=SAMPLES),
        expand('result/{sample}_braker.codingseq', sample=SAMPLES),
+       expand('tmp/{sample}_braker.done', samples=SAMPLES),
        expand('result/{sample}_braker_aa.fasta.tsv', sample=SAMPLES),
        expand('result/{sample}_NLRclassification.done', sample=SAMPLES),
        expand('result/{sample}_ID.done', sample=SAMPLES)
@@ -41,7 +42,7 @@ rule braker:
         shell("sed -e 's/\*//g' braker/braker.aa >  {output.aa}")
         shell("cp braker/braker.gff3 {output.gff3}")
         shell("rm -r braker")
-        shell("touch output.touch_file")
+        shell("touch {output.touch_file}")
 #Interproscan
 rule Interproscan_classification:
     input:
