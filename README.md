@@ -1,6 +1,9 @@
 ## About FindPlantNLRs
 We developed a comprehensive pipeline for annotating predicted NLR genes from a non-masked genome fasta file input. We identify loci using NLR-annotator software (Steuernagel _et al_. 2020), tblastn (Altschul _et al_. 1990) and Hidden Markov Model (HMM) (Eddy 2010). The unmasked loci identified through these methods, and including 20 kb flanking regions, are then annotated with Braker2 software (Hoff _et al_. 2019) using experimentally validated resistance genes as reference (Kourelis _et al_. 2021). Annotated amino acid fasta files are screened for domains using Interproscan (Jones _et al_. 2014) and the predicted coding and amino acid sequences containing both NB-ARC and LRR domains are located back to scaffolds/chromosomes and extracted in fasta and gff3 format.
 
+If you find this pipeline useful for your work, please cite:
+Stephanie H Chen, Alyssa M Martino, Zhenyan Luo, Benjamin Schwessinger, Ashley Jones, Tamene Tolessa, Jason G Bragg, Peri A Tobias, Richard J Edwards, A high-quality pseudo-phased genome for Melaleuca quinquenervia shows allelic diversity of NLR-type resistance genes, GigaScience, Volume 12, 2023, giad102, https://doi.org/10.1093/gigascience/giad102
+
 ## Overview of the whole pipeline
 ![NLR_flowchart2](https://user-images.githubusercontent.com/53864342/232355873-299f26a7-4776-442e-842e-13737dd605d8.jpg)
 
