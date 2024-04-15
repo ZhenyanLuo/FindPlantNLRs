@@ -57,33 +57,13 @@ For your own data, make sure sequence headers are short, unique and only have nu
 ### Step 5: Edit the FindPlantNLRs_config.yaml configure file to change threads used in tblastn 
 ## You don't need to change any of the path in most of the case
 ```
-#Path to NLR-Annotator
-
-NLR-Annotator: "{path/to/your}/NLR-Annotator"
-
-#Path to reference database
-
-ref: "{path/to/your/ref/fasta}"
-
-#Add path to meme
-
-meme: "{path/to/your/meme}/mast"
-
-#Add path to meme.xml from NLR-Annotator
-
-meme_xml: "{path/to/your}/meme.xml"
-
-#Add path to braker.pl
-
-braker: "{path/to/your}/BRAKER"
-
-#Add path to augustus script
-
-augustus: "{path/to/your/augustus}/scripts/gtf2gff.pl
-
-#Add path to Interproscan
-
-interproscan: "{path/to/your/interproscan}/interproscan.sh"
+NLR-Annotator: "/home/NLR-Annotator"
+ref: "/home/FindPlantNLRs/ref_db/ref.fasta"
+meme: "/opt/conda/envs/FindPlantNLRs/bin/mast"
+meme_xml: "/home/meme.xml"
+braker: "/opt/conda/envs/Annotate_NLR/bin"
+interproscan: "/home/interproscan/interproscan.sh"
+blast_threads: "12"
 ```
 ### Step 6: Launch the pipeline
 For extract sequences potentially contain NLR genes
