@@ -5,9 +5,9 @@ prefix_name=$1
 NLR_type=$2
 
 #First extract all Pfam codes from the .tsv - thereby excluding all coils and other database outputs.
-grep 'Pfam' result/${prefix_name}_augustus_aa.fasta.tsv > result/${prefix_name}_pfam.tsv
+grep 'Pfam' result/${prefix_name}_braker_aa.fasta.tsv > result/${prefix_name}_pfam.tsv
 #Then extract all the genes based on the lists from NLR_clasification. For example,
-fgrep -w -f result/${prefix_name}_${NLR_type}.list result/${prefix_name}_pfam.tsv > result/${prefix_name}_${NLR_type}_Pfams.tsv
+fgrep -w -f result/${prefix_name}_braker_aa_${NLR_type}.list result/${prefix_name}_pfam.tsv > result/${prefix_name}_${NLR_type}_Pfams.tsv
 #Then extract all domains that are not present in NLR classifications using the parameter -v with fgrep. Make a list of NLR Pfams and call the txt file "NLR_Pfams.list" (PF00931, PF18052, PF08263, PF12799, PF13306, PF13855, PF13516, PF00560, PF07725, PF05659, PF01582, PF17862) associated with NLR genes.
 fgrep -wv -f NLR_Pfams.list result/${prefix_name}_${NLR_type}_Pfams.tsv > result/${prefix_name}_${NLR_type}_ID_Pfams.tsv
 #Obtain meaningful column data 

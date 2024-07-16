@@ -14,9 +14,9 @@ if not os.path.exists(result):
 rule all:
      input:
        expand('tmp/{sample}_all_20kbflanking_removed.fasta', sample=SAMPLES),
-       expand('result/{sample}_augustus_aa.fasta', sample=SAMPLES),
+       expand('result/{sample}_braker_aa.fasta', sample=SAMPLES),
        expand('result/{sample}.codingseq', sample=SAMPLES),
-       expand('result/{sample}_augustus_aa.fasta.tsv', sample=SAMPLES),
+       expand('result/{sample}_braker_aa.fasta.tsv', sample=SAMPLES),
        expand('result/{sample}_NLRclassification.done', sample=SAMPLES),
        expand('result/{sample}_ID.done', sample=SAMPLES)
 #RefPlant_aa.fa is from https://www.biorxiv.org/content/10.1101/2020.07.08.193961v2
@@ -30,36 +30,35 @@ rule braker:
         removed="tmp/{sample}_all_20kbflanking_removed.fasta",
         hints_gtf="tmp/{sample}_braker.gtf",
         codingseq="result/{sample}.codingseq",
-        gff3="result/{sample}_augustus.gff3",
-        aa="result/{sample}_augustus_aa.fasta"
+        gff3="result/{sample}_braker.gff3",
+        aa="result/{sample}_braker_aa.fasta"
     params:
         "{sample}"
     run:
         shell("sed 's/(//;s/)//' {input.raw} > {output.removed}")
-        shell("perl {config[braker]}/braker.pl --cores=15 --genome={output.removed} --prot_seq={config[ref]} --epmode ")
-        shell("perl {config[augustus]}/gtf2gff.pl < braker/augustus.hints.gtf --printExon --out={output.gff3} --gff3")
-        shell("cp braker/augustus.hints.codingseq {output.codingseq}")
-        shell("sed -e 's/\*//g' braker/augustus.hints.aa >  {output.aa}")
+        shell("singularity exec -B $PWD:$PWD {config[braker]} braker.pl --threads={config[CPUs]} --genome={output.removed} --prot_seq={config[ref]} --gff3")
+        shell("cp braker/braker.codingseq {output.codingseq}")
+        shell("sed -e 's/\*//g' braker/braker.aa >  {output.aa}")
         shell("rm -r braker/GeneMark-EP braker/GeneMark-ES")
 #Interproscan
 rule Interproscan_classification:
     input:
-        fasta="result/{sample}_augustus_aa.fasta",
-        gff="result/{sample}_augustus.gff3",
+        fasta="result/{sample}_braker_aa.fasta",
+        gff="result/{sample}_braker.gff3",
         genome="genome/{sample}.fa"
     output:
-        interpro="result/{sample}_augustus_aa.fasta.tsv",
+        interpro="result/{sample}_braker_aa.fasta.tsv",
         touch_file="result/{sample}_NLRclassification.done"
     shell:
         """
-        bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu 16 -f tsv -o {output.interpro}
+        bash {config[interproscan]} -t p -appl Pfam, COILS, Gene3D -i {input.fasta} -cpu {config[CPUs]} -f tsv -o {output.interpro}
         bash NLR_classification.sh {output.interpro} {input.gff} {input.fasta} {input.genome}
         touch {output.touch_file}
         """
 #Find Integrate domain
 rule Integrate_domain:
     input:
-        "result/{sample}_augustus_aa.fasta.tsv"
+        "result/{sample}_braker_aa.fasta.tsv"
     output:
         "result/{sample}_ID.done"
     params:
