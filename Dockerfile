@@ -226,7 +226,7 @@ RUN cd /opt && \
 # FindPlantNLRs
 #
 RUN cd /opt && \
-    wget https://github.com/burntbridge/FindPlantNLRs/archive/refs/tags/v2.1.tar.gz && \
+    wget https://github.com/peritob/FindPlantNLRs/archive/refs/tags/v2.1.tar.gz && \
     tar xzf v2.1.tar.gz && \
     rm -f v2.1.tar.gz && \
     mv FindPlantNLRs-2.1 FindPlantNLRs && \
