@@ -1,4 +1,4 @@
-## This branch is for docker version of FindPlantNLRs pipeline 
+## This is a revised version of FindPlantNLRs 
 
 ## About FindPlantNLRs
 We developed a comprehensive pipeline for annotating predicted NLR genes from a non-masked genome fasta file input. We identify loci using NLR-annotator software (Steuernagel _et al_. 2020), tblastn (Altschul _et al_. 1990) and Hidden Markov Model (HMM) (Eddy 2010). The unmasked loci identified through these methods, and including 20 kb flanking regions, are then annotated with Braker2 software (Hoff _et al_. 2019) using experimentally validated resistance genes as reference (Kourelis _et al_. 2021). Annotated amino acid fasta files are screened for domains using Interproscan (Jones _et al_. 2014) and the predicted coding and amino acid sequences containing both NB-ARC and LRR domains are located back to scaffolds/chromosomes and extracted in fasta and gff3 format.
@@ -12,77 +12,69 @@ We developed a comprehensive pipeline for annotating predicted NLR genes from a 
 
 
 
-## Dependencies
+## Changes in this version
+This new docker version simplifies the installation and running. The outputs are not changed.
 
-NLR_annotator: https://doi.org/10.1104/pp.19.01273
-Steuernagel, B., Witek, K., Krattinger, S.G., Ramirez-Gonzalez, R.H., Schoonbeek, H.J., Yu, G., Baggs, E., Witek, A.I., Yadav, I., Krasileva, K.V. and Jones, J.D., 2020. The NLR-Annotator tool enables annotation of the intracellular immune receptor repertoire. Plant Physiology, 183(2), pp.468-482.
+## To run the FindPlantNLRs pipeline
 
-BRAKER2: https://github.com/Gaius-Augustus/BRAKER
+### Step 1: 
+Download the dockerfile and build the docker image.
+```
+wget https://github.com/peritob/FindPlantNLRs/raw/refs/heads/main/Dockerfile
+sudo docker build --tag fpn .
+```
 
-Interproscan: https://interproscan-docs.readthedocs.io/en/latest/UserDocs.html#obtaining-a-copy-of-interproscan
-Jones, P., Binns, D., Chang, H.Y., Fraser, M., Li, W., McAnulla, C., McWilliam, H., Maslen, J., Mitchell, A., Nuka, G. and Pesseat, S., 2014. InterProScan 5: genome-scale protein function classification. Bioinformatics, 30(9), pp.1236-1240.
 
-Blast: https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+### Step 2:
+Create a working directory e.g.
+```
+mkdir FindPlantNLRs
+cd FindPlantNLRs
+mkdir genome
+```
+### Step 3:
+Move your genome file/s into "genome" directory. Genomes must have extension .fasta. Genomes should be unmasked (uppercase) and have simple headers (short, unique and only have numerics and characters).
+For general use with NCBI genomes.
+```
+awk '/^>/ {print} /^[^>]/ {print toupper($0)}' input.fasta > output_upper.fasta
+```
+Fix/simplify headers
+```
+awk '/^>/ {print $1; next} {print}' input.fasta > output.fasta
+```
 
-hmmsearch: http://hmmer.org/download.html
+### Step 4:
+From the working directory you created (FindPlantNLRs), run the docker image.
+```
+sudo docker run --volume $(pwd):/work --interactive --tty --rm fpn bash
+```
+### Step 5:
+Now you should be within the docker container. Start the pipeline with this command.
 
-Meme: https://meme-suite.org/meme/meme-software/4.9.1/readme.html
+```
+FindPlantNLRs.sh
+```
 
-BRAKER3: https://github.com/Gaius-Augustus/BRAKER
+### Other information
+The pipeline will run through several stages including identifying NLR regions within the genome, annotating the regions, functional predictions followed by a final step of sorting by domain classes. Some steps take a while to run such as tblastn, braker and interproscan. 
 
-## Before running the pipeline
+### Outputs
+All results will be in the result directory and intermediate files will be in tmp. Results include lists of genes by NLR class, integrated domain containing NLRs, protein and coding sequence fasta files by class. Once you have completed your run, it is safe to remove the tmp directory.
 
-### Step 1: Set up docker (root or rootless)
+## Attributions
+Please cite all dependencies used in this pipeline.
 
-### Step 2: Get reference database
-
-Recommended reference database for tblastn and braker can be downloaded from supplementary file S1 of 'RefPlantNLR is a comprehensive collection of experimentally validated plant disease resistance proteins from the NLR family'
+- NLR_annotator: https://doi.org/10.1104/pp.19.01273
+- Interproscan: https://academic.oup.com/bioinformatics/article/30/9/1236/237988
+- hmmsearch: http://eddylab.org/software/hmmer3/3.1b2/Userguide.pdf
+- Meme: https://academic.oup.com/nar/article/43/W1/W39/2467905
+- BRAKER3: https://genome.cshlp.org/content/34/5/769
+- BLAST: https://www.sciencedirect.com/science/article/abs/pii/S0022283605803602
+- Reference database (RefNLR) for tblastn and braker is the supplementary file S1: 
 https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001124
 
-### Step 3: Get a few dependencies being prepared
-GeneMark: http://exon.gatech.edu/GeneMark/
-Please have gm_key_64.gz, gmes_linux_64.tar.gz, journal.pbio.3001124.s013 prepared in the same folder
-Since interproscan database is large, we also recommend you to have interproscan downloaded on host
-https://www.ebi.ac.uk/interpro/download/InterProScan/
-### Step 4: Create the docker image 
-Download the dockerfile from this branch, run
-```
-docker build -t findplantsnlr:latest -f dockerfile .
-```
-Once the docker image has been created suscessfully, you can run the following command to bind your interproscan:
-```
-docker run -v ${your interproscan}:/home/interproscan -v ${your input data file}:/home/FindPlantNLRs/genome -v ${result folder on your host}:/home/FindPlantNLRs/result -ti findplantsnlr bash
-```
-For your own data, make sure sequence headers are short, unique and only have numerics and characters.
-### Step 5: Edit the FindPlantNLRs_config.yaml configure file to change threads used in tblastn 
-## You don't need to change any of the path in most of the case
-```
-NLR-Annotator: "/home/NLR-Annotator"
-ref: "/home/FindPlantNLRs/ref_db/ref.fasta"
-meme: "/opt/conda/envs/FindPlantNLRs/bin/mast"
-meme_xml: "/home/meme.xml"
-braker: "/opt/conda/envs/Annotate_NLR/bin"
-interproscan: "/home/interproscan/interproscan.sh"
-blast_threads: "12"
-```
-### Step 6: Launch the pipeline
-For extract sequences potentially contain NLR genes
-```
-conda activate FindPlantNLRs
-cd /home/FindPlantNLRs/
-snakemake -s FindPlantNLRs -c {threads as you like} --wait-for-files
-```
-For annotate NLRs
-```
-conda activate Annotate_NLR
-snakemake -s Annotate_NLR --cores 1 --wait-for-files
-```
-
-
-
-## Contributor
+## Contributors
 Tamene Tolessa, Peri Tobias, Benjamin Schwessinger, Zhenyan Luo
 
 ## How to cite this pipeline
-
-Please also remember to cite all dependencies used in this pipeline
+If you find this pipeline useful for your work, please cite:  https://doi.org/10.1093/gigascience/giad102
