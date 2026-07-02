@@ -7,12 +7,6 @@ We developed a comprehensive pipeline for annotating predicted NLR genes from a 
 ![NLR_flowchart2](https://user-images.githubusercontent.com/53864342/232355873-299f26a7-4776-442e-842e-13737dd605d8.jpg)
 
 
-## Important Note!
-'A revised docker version for this repo is available at: https://github.com/peritob/FindPlantNLRs'
-
-
-
-
 ## Changes in this version
 This new docker version simplifies the installation and running. The outputs are not changed.
 
